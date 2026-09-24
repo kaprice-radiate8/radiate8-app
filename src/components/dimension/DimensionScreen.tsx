@@ -2,16 +2,17 @@
 
 /**
  * DIMENSION SCREEN
- * First version: the dimension's header, its current score, the five
- * reflection sections (writing space arrives in the next build step),
- * and its songs.
+ * The dimension's header and current score, its journal (write a new
+ * page, then read back every page written here), and its songs.
  */
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { brand, getDimension, reflectionSections, type DimensionId } from "@/config/app.config";
+import { brand, getDimension, type DimensionId } from "@/config/app.config";
 import { dimensionSongs, getSong } from "@/content/music";
 import { useStoreData } from "@/lib/data";
 import { Icon } from "../Icon";
+import { JournalComposer } from "../journal/JournalComposer";
+import { JournalPages } from "../journal/JournalPages";
 import { SongCard } from "../music/SongCard";
 
 export function DimensionScreen({ dimensionId }: { dimensionId: DimensionId }) {
@@ -39,19 +40,16 @@ export function DimensionScreen({ dimensionId }: { dimensionId: DimensionId }) {
         )}
       </header>
 
+      {/* The journal: write a new page, then see every page written here */}
       <section className="mt-8">
-        <p className="label">Reflect</p>
-        <p className="mt-1 font-script text-4xl text-plum">{brand.triads[0]}</p>
-        <ol className="mt-4 space-y-3">
-          {reflectionSections.map((section, i) => (
-            <li key={section.id} className="card flex items-center gap-4 p-5">
-              <span className="font-serif text-2xl text-plum-soft/50">{i + 1}</span>
-              <span className="font-serif text-xl text-plum">{section.title}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-3 text-center text-sm text-plum-soft/80">Your writing space for each section opens here soon.</p>
+        <p className="label">Your journal</p>
+        <p className="mt-1 mb-5 font-script text-4xl text-plum">{brand.triads[0]}</p>
+        <JournalComposer dimension={d} />
       </section>
+
+      <div className="mt-10">
+        <JournalPages dimensionId={d.id} />
+      </div>
 
       <section className="card mt-8 p-5">
         <p className="label">Songs for {d.name}</p>

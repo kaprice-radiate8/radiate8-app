@@ -11,6 +11,7 @@
 import type {
   AttentionEntry,
   DataStore,
+  JournalEntry,
   MoodEntry,
   Profile,
   WheelScores,
@@ -23,6 +24,8 @@ const KEYS = {
   wheel: PREFIX + "wheel",
   moods: PREFIX + "moods",
   attention: PREFIX + "attention",
+  journal: PREFIX + "journal",
+  drafts: PREFIX + "drafts",
 };
 
 /** Keep the attention log from growing forever (roughly a year of gentle use). */
@@ -44,6 +47,22 @@ function read<T>(key: string, fallback: T): T {
 }
 
 const listeners = new Set<() => void>();
+
+/** A unique id for new records (works in every modern browser). */
+function newId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/** Save without telling every screen (used for drafts, which save on each keystroke). */
+function writeQuietly(key: string, value: unknown) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage full or blocked. The app keeps working for this session.
+  }
+}
 
 function write(key: string, value: unknown) {
   try {
@@ -90,6 +109,41 @@ export const localStore: DataStore = {
   },
   async getAttention(sinceISO) {
     return read<AttentionEntry[]>(KEYS.attention, []).filter((e) => e.at >= sinceISO);
+  },
+
+  async listJournal(dimensionId) {
+    const all = read<JournalEntry[]>(KEYS.journal, []);
+    const pages = dimensionId ? all.filter((e) => e.dimensionId === dimensionId) : all;
+    return [...pages].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+  async addJournalEntry(entry) {
+    const now = new Date().toISOString();
+    const page: JournalEntry = { ...entry, id: newId(), createdAt: now, updatedAt: now };
+    write(KEYS.journal, [...read<JournalEntry[]>(KEYS.journal, []), page]);
+    return page;
+  },
+  async updateJournalEntry(id, text) {
+    const all = read<JournalEntry[]>(KEYS.journal, []);
+    write(
+      KEYS.journal,
+      all.map((e) => (e.id === id ? { ...e, text, updatedAt: new Date().toISOString() } : e)),
+    );
+  },
+  async deleteJournalEntry(id) {
+    write(
+      KEYS.journal,
+      read<JournalEntry[]>(KEYS.journal, []).filter((e) => e.id !== id),
+    );
+  },
+
+  async getDraft(key) {
+    return read<Record<string, string>>(KEYS.drafts, {})[key] ?? "";
+  },
+  async setDraft(key, text) {
+    const drafts = read<Record<string, string>>(KEYS.drafts, {});
+    if (text) drafts[key] = text;
+    else delete drafts[key];
+    writeQuietly(KEYS.drafts, drafts);
   },
 
   subscribe(listener) {

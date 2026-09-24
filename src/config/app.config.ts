@@ -86,6 +86,8 @@ export const dimensions = [
     id: "career",
     name: "Career",
     subtitle: "Purpose, work, and the mark you make",
+    /** How this dimension reads inside a sentence, used in journal prompts. */
+    phrase: "your career",
     icon: "briefcase",
     accent: "#7B5A78",
   },
@@ -93,6 +95,7 @@ export const dimensions = [
     id: "health",
     name: "Health",
     subtitle: "Body, energy, and how you care for you",
+    phrase: "your health",
     icon: "heart-pulse",
     accent: "#A9B39A",
   },
@@ -100,6 +103,7 @@ export const dimensions = [
     id: "relationships",
     name: "Relationships and Love",
     subtitle: "The hearts you hold and who holds yours",
+    phrase: "love and your relationships",
     icon: "heart",
     accent: "#C99199",
   },
@@ -107,6 +111,7 @@ export const dimensions = [
     id: "joy",
     name: "Joy",
     subtitle: "Play, delight, and what lights you up",
+    phrase: "joy",
     icon: "sun",
     accent: "#D3A45C",
   },
@@ -114,6 +119,7 @@ export const dimensions = [
     id: "growth",
     name: "Growth",
     subtitle: "Learning, stretching, and becoming",
+    phrase: "your growth",
     icon: "sprout",
     accent: "#8E9C7C",
   },
@@ -121,6 +127,7 @@ export const dimensions = [
     id: "stillness",
     name: "Stillness and Spirit",
     subtitle: "Quiet, faith, and your inner knowing",
+    phrase: "stillness and spirit",
     icon: "moon",
     accent: "#9A86A6",
   },
@@ -128,6 +135,7 @@ export const dimensions = [
     id: "environment",
     name: "Environment",
     subtitle: "Your home, your spaces, your surroundings",
+    phrase: "your surroundings",
     icon: "leaf",
     accent: "#93AAAA",
   },
@@ -135,6 +143,7 @@ export const dimensions = [
     id: "finances",
     name: "Finances",
     subtitle: "Abundance, ease, and a steady foundation",
+    phrase: "your finances",
     icon: "coins",
     accent: "#A88B6C",
   },
@@ -164,8 +173,9 @@ export const moods = [
 export type MoodId = (typeof moods)[number]["id"];
 
 // ------------------------------------------------------------
-// 5. REFLECTION SECTIONS (used on each dimension's page)
+// 5. REFLECTION SECTIONS (used in each dimension's journal)
 // ------------------------------------------------------------
+// The prompts for each section live in src/content/prompts.ts
 export const reflectionSections = [
   { id: "celebrate", title: "Celebrate What Is" },
   { id: "see", title: "See Yourself Clearly" },
@@ -173,3 +183,5 @@ export const reflectionSections = [
   { id: "keep", title: "What Gets To Stay" },
   { id: "forward", title: "Looking Forward" },
 ] as const;
+
+export type ReflectionSectionId = (typeof reflectionSections)[number]["id"];

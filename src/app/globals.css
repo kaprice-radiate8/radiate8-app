@@ -111,3 +111,15 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid var(--r8-line);
   box-shadow: 0 4px 12px -4px rgb(75 48 74 / 0.4);
 }
+
+/* Journal paper: soft ruled lines, with a faint blush margin line on the left.
+   Text written on it should use line-height 2rem so it sits on the lines. */
+@utility paper {
+  background-color: var(--r8-linen);
+  background-image:
+    linear-gradient(to right, transparent 1.6rem, rgb(232 210 205 / 0.9) 1.6rem, rgb(232 210 205 / 0.9) calc(1.6rem + 1px), transparent calc(1.6rem + 1px)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc(2rem - 1px), var(--r8-line) calc(2rem - 1px), var(--r8-line) 2rem);
+  background-attachment: local;
+  background-position: 0 -0.2rem;
+  line-height: 2rem;
+}
