@@ -9,7 +9,7 @@
  *
  * After changing which screens exist, bump VERSION so phones refresh their copy.
  */
-const VERSION = "rhythm-v1";
+const VERSION = "rhythm-v2";
 
 const CORE = [
   "/",

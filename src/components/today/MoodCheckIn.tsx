@@ -2,10 +2,12 @@
 
 /**
  * MOOD CHECK-IN: "How are you arriving today?"
- * One soft tap. Saved for today and gently answered.
+ * Soft round choices (as in the brand guide's app mockup). One tap saves
+ * today's answer, and a gentle line answers back.
  */
 import { moods } from "@/config/app.config";
 import { store, todayKey, useStoreData } from "@/lib/data";
+import { Icon } from "../Icon";
 
 export function MoodCheckIn() {
   const today = todayKey();
@@ -15,9 +17,9 @@ export function MoodCheckIn() {
   return (
     <section className="card p-5">
       <p className="label">Check in</p>
-      <h2 className="mt-2 font-serif text-2xl text-espresso">How are you arriving today?</h2>
+      <h2 className="mt-2 font-serif text-2xl text-plum">How are you arriving today?</h2>
 
-      <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="How are you arriving today?">
+      <div className="mt-5 grid grid-cols-5 gap-1" role="radiogroup" aria-label="How are you arriving today?">
         {moods.map((mood) => {
           const active = mood.id === selected?.id;
           return (
@@ -27,23 +29,23 @@ export function MoodCheckIn() {
               role="radio"
               aria-checked={active}
               onClick={() => store.setMood(today, mood.id)}
-              className={`rounded-full border px-4 py-2 text-sm transition-all duration-500 active:scale-95 ${
-                active
-                  ? "border-terracotta bg-terracotta text-cream shadow-[0_8px_18px_-10px_var(--r8-terracotta)]"
-                  : "border-line bg-sand-light/60 text-cocoa hover:border-clay"
-              }`}
+              className="group flex flex-col items-center gap-2"
             >
-              {mood.label}
+              <span
+                className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-500 group-active:scale-95 ${
+                  active ? "bg-plum text-ivory shadow-[0_10px_20px_-10px_var(--r8-plum)]" : "bg-blush/70 text-plum group-hover:bg-blush"
+                }`}
+              >
+                <Icon name={mood.icon} size={22} />
+              </span>
+              <span className={`text-xs ${active ? "font-medium text-plum" : "text-plum-soft"}`}>{mood.label}</span>
             </button>
           );
         })}
       </div>
 
       {/* The gentle reply fades in once a mood is chosen */}
-      <p
-        key={selected?.id ?? "none"}
-        className={`mt-4 min-h-8 font-script text-xl text-terracotta ${selected ? "rise" : "opacity-0"}`}
-      >
+      <p key={selected?.id ?? "none"} className={`mt-4 min-h-7 text-center font-serif text-lg text-plum-soft italic ${selected ? "rise" : "opacity-0"}`}>
         {selected?.reply ?? " "}
       </p>
     </section>

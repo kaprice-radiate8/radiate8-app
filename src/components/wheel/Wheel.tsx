@@ -13,7 +13,6 @@
  */
 import { dimensions, type DimensionId } from "@/config/app.config";
 import type { WheelScores } from "@/lib/data";
-import { Figure8 } from "../Figure8";
 import { Icon } from "../Icon";
 
 const SIZE = 400;
@@ -61,7 +60,7 @@ export function Wheel({ scores, selectedId, onSelect }: Props) {
       </defs>
 
       {/* Soft halo behind the wheel */}
-      <circle cx={C} cy={C} r={R + 10} fill="var(--r8-cream)" opacity="0.55" />
+      <circle cx={C} cy={C} r={R + 10} fill="var(--r8-linen)" opacity="0.55" />
 
       {dimensions.map((d, i) => {
         const score = scores?.[d.id] ?? 0;
@@ -85,10 +84,10 @@ export function Wheel({ scores, selectedId, onSelect }: Props) {
             {/* Empty petal (the track) */}
             <path
               d={wedgePath(i, R)}
-              fill="var(--r8-cream)"
-              stroke="var(--r8-sand)"
+              fill="var(--r8-linen)"
+              stroke="var(--r8-ivory)"
               strokeWidth={3}
-              className="transition-[fill] duration-500 group-hover:fill-[var(--r8-sand-light)] group-focus-visible:fill-[var(--r8-sand-light)]"
+              className="transition-[fill] duration-500 group-hover:fill-[var(--r8-ivory-light)] group-focus-visible:fill-[var(--r8-ivory-light)]"
             />
 
             {/* Colored fill, scaled by score */}
@@ -99,7 +98,7 @@ export function Wheel({ scores, selectedId, onSelect }: Props) {
                 transition: `transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) ${i * 70}ms`,
               }}
             >
-              <path d={wedgePath(i, R)} fill={d.accent} opacity={selected ? 1 : 0.82} stroke="var(--r8-sand)" strokeWidth={3} />
+              <path d={wedgePath(i, R)} fill={d.accent} opacity={selected ? 1 : 0.82} stroke="var(--r8-ivory)" strokeWidth={3} />
               <path d={wedgePath(i, R)} fill="url(#petal-sheen)" />
             </g>
 
@@ -114,7 +113,7 @@ export function Wheel({ scores, selectedId, onSelect }: Props) {
             />
 
             {/* Icon around the outside */}
-            <circle cx={mid.x} cy={mid.y} r={17} fill="var(--r8-cream)" stroke={selected ? d.accent : "var(--r8-line)"} strokeWidth={1.2} className="transition-[stroke] duration-500" />
+            <circle cx={mid.x} cy={mid.y} r={17} fill="var(--r8-linen)" stroke={selected ? d.accent : "var(--r8-line)"} strokeWidth={1.2} className="transition-[stroke] duration-500" />
             <Icon name={d.icon} x={mid.x - 9} y={mid.y - 9} width={18} height={18} color={d.accent} strokeWidth={1.6} />
           </g>
         );
@@ -122,16 +121,22 @@ export function Wheel({ scores, selectedId, onSelect }: Props) {
 
       {/* Faint guide rings at 2, 4, 6, 8 */}
       {[2, 4, 6, 8].map((n) => (
-        <circle key={n} cx={C} cy={C} r={R * scaleFor(n)} fill="none" stroke="var(--r8-espresso)" strokeOpacity="0.07" strokeDasharray="2 5" className="pointer-events-none" />
+        <circle key={n} cx={C} cy={C} r={R * scaleFor(n)} fill="none" stroke="var(--r8-plum)" strokeOpacity="0.07" strokeDasharray="2 5" className="pointer-events-none" />
       ))}
 
-      {/* Center hub with the figure eight */}
-      <circle cx={C} cy={C} r={HUB} fill="var(--r8-cream)" stroke="var(--r8-line)" />
-      <foreignObject x={C - 26} y={C - 26} width={52} height={52} className="pointer-events-none">
-        <div className="flex h-full w-full items-center justify-center text-terracotta">
-          <Figure8 size={44} animated strokeWidth={4} />
-        </div>
-      </foreignObject>
+      {/* Center hub with the brand's pale serif 8 */}
+      <circle cx={C} cy={C} r={HUB} fill="var(--r8-linen)" stroke="var(--r8-line)" />
+      <text
+        x={C}
+        y={C + 2}
+        textAnchor="middle"
+        dominantBaseline="central"
+        className="pointer-events-none font-serif"
+        fontSize={62}
+        fill="#DEC3BC"
+      >
+        8
+      </text>
     </svg>
   );
 }

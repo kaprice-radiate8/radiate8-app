@@ -26,10 +26,10 @@ export function WheelScreen() {
 
   return (
     <>
-      <header className="pt-2 text-center">
+      <header className="text-center">
         <p className="label">The Radiate 8</p>
-        <h1 className="mt-2 font-serif text-4xl font-light text-espresso">Your Wheel</h1>
-        <p className="mt-2 font-script text-xl text-terracotta">
+        <h1 className="mt-2 font-serif text-4xl text-plum">Your Wheel</h1>
+        <p className="mt-2 font-script text-3xl text-plum">
           {rated === 0 ? "Tap a petal to begin" : rated < dimensions.length ? "Keep going, gently" : "Your whole self, in one breath"}
         </p>
       </header>
@@ -48,7 +48,7 @@ export function WheelScreen() {
                   <Icon name={d.icon} size={17} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-serif text-lg leading-tight text-espresso">{d.name}</span>
+                  <span className="block font-serif text-lg leading-tight text-plum">{d.name}</span>
                   <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-line/70">
                     <span
                       className="block h-full rounded-full transition-[width] duration-1000 ease-out"
@@ -56,7 +56,7 @@ export function WheelScreen() {
                     />
                   </span>
                 </span>
-                <span className="w-8 text-right font-serif text-xl text-cocoa">{score ?? ""}</span>
+                <span className="w-8 text-right font-serif text-xl text-plum-soft">{score ?? ""}</span>
               </button>
             </li>
           );

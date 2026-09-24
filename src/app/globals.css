@@ -7,21 +7,21 @@
 
 /* Connect config colors and fonts to Tailwind class names. */
 @theme inline {
-  --color-sand: var(--r8-sand);
-  --color-sand-light: var(--r8-sand-light);
-  --color-cream: var(--r8-cream);
-  --color-terracotta: var(--r8-terracotta);
-  --color-clay: var(--r8-clay);
-  --color-rose: var(--r8-rose);
+  --color-plum: var(--r8-plum);
+  --color-plum-soft: var(--r8-plum-soft);
   --color-gold: var(--r8-gold);
-  --color-espresso: var(--r8-espresso);
-  --color-cocoa: var(--r8-cocoa);
+  --color-ivory: var(--r8-ivory);
+  --color-ivory-light: var(--r8-ivory-light);
+  --color-linen: var(--r8-linen);
+  --color-blush: var(--r8-blush);
+  --color-taupe: var(--r8-taupe);
   --color-line: var(--r8-line);
 
-  /* font-serif: headlines, font-script: emotional accents, font-sans: labels */
+  /* font-serif: headlines, font-script: short emotional accents, font-sans: body and labels.
+     The fonts themselves are chosen in src/config/fonts.ts */
   --font-serif: var(--font-cormorant), Georgia, serif;
-  --font-script: var(--font-dancing), cursive;
-  --font-sans: var(--font-jost), system-ui, sans-serif;
+  --font-script: var(--font-accent-script), cursive;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
 
   /* "backwards" (not "both") so no transform lingers after the animation;
      a lingering transform would pin pop-up sheets to the page instead of the screen. */
@@ -48,9 +48,17 @@ html {
 }
 
 body {
-  background-color: var(--r8-sand);
-  color: var(--r8-espresso);
+  background-color: var(--r8-ivory);
+  color: var(--r8-plum);
   font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* Brand headline style: Cormorant Garamond 500, tight line height, slightly tight spacing. */
+h1, h2, h3 {
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 /* Calm the motion for anyone who has asked their device for less. */
@@ -65,17 +73,19 @@ body {
 /* Small uppercase label style used throughout ("TODAY'S DEDICATION"). */
 @utility label {
   font-family: var(--font-sans);
+  font-weight: 500;
   font-size: 0.68rem;
-  letter-spacing: 0.22em;
+  line-height: 1.4;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--r8-cocoa);
+  color: var(--r8-plum);
 }
 
 /* Cream card floating over the warm background. */
 @utility card {
-  background-color: var(--r8-cream);
+  background-color: var(--r8-linen);
   border-radius: 1.75rem;
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 18px 40px -24px rgb(59 42 34 / 0.35);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 18px 40px -24px rgb(75 48 74 / 0.3);
 }
 
 /* Soft staggered entrance: add `rise` and a delay like `[animation-delay:120ms]`. */
@@ -89,15 +99,15 @@ input[type="range"]::-webkit-slider-thumb {
   height: 26px;
   width: 26px;
   border-radius: 9999px;
-  background: var(--r8-cream);
+  background: var(--r8-linen);
   border: 1px solid var(--r8-line);
-  box-shadow: 0 4px 12px -4px rgb(59 42 34 / 0.45);
+  box-shadow: 0 4px 12px -4px rgb(75 48 74 / 0.4);
 }
 input[type="range"]::-moz-range-thumb {
   height: 26px;
   width: 26px;
   border-radius: 9999px;
-  background: var(--r8-cream);
+  background: var(--r8-linen);
   border: 1px solid var(--r8-line);
-  box-shadow: 0 4px 12px -4px rgb(59 42 34 / 0.45);
+  box-shadow: 0 4px 12px -4px rgb(75 48 74 / 0.4);
 }

@@ -1,42 +1,41 @@
 /**
- * Creates the app's home-screen icons (public/icons/*.png) from a
- * simple figure-eight drawing in the brand colors.
+ * Creates the app's home-screen icons (public/icons/*.png): the seven-dot
+ * micro mark in gold on ivory, with the pale serif 8 behind it, following
+ * the Radiate 8 brand guide ("compact uses: use the micro mark").
+ * Replace with the approved master artwork when available.
  * Run again after changing colors:  node scripts/generate-icons.mjs
  * (Uses "sharp", which comes installed alongside Next.js.)
  */
 import { mkdirSync } from "node:fs";
 import sharp from "sharp";
 
-const TERRACOTTA = "#C26A4A";
-const CREAM = "#FBF6EE";
-const SAND = "#EFE3D3";
-const GOLD = "#D8A865";
+const GOLD = "#C18D4A";
+const IVORY = "#F4E7D8";
+const BLUSH = "#E8D2CD";
 
-// A smooth figure eight (lemniscate), standing upright.
-function eightPath(cx, cy, size) {
-  const pts = [];
-  for (let i = 0; i <= 120; i++) {
-    const t = (i / 120) * Math.PI * 2;
-    const d = 1 + Math.sin(t) ** 2;
-    const x = (size * Math.sin(t) * Math.cos(t)) / d;
-    const y = (size * Math.cos(t)) / d;
-    pts.push(`${i ? "L" : "M"}${(cx + x).toFixed(1)} ${(cy + y).toFixed(1)}`);
-  }
-  return pts.join(" ") + "Z";
-}
+// Same dots as src/components/MicroMark.tsx (vertical position, radius).
+const DOTS = [
+  [5, 3.2],
+  [19, 4.2],
+  [36, 5.4],
+  [57, 8.2],
+  [79, 7],
+  [98, 4.8],
+  [114, 3.4],
+];
 
 function svg(scale) {
-  // `scale` shrinks the eight for "maskable" icons, which phones crop into circles.
+  // `scale` shrinks the artwork for "maskable" icons, which phones crop into circles.
+  const h = 330 * scale; // height of the dot stack
+  const k = h / 119;
+  const top = 256 - (119 * k) / 2;
+  const dots = DOTS.map(
+    ([cy, r]) => `<circle cx="256" cy="${(top + cy * k).toFixed(1)}" r="${(r * k).toFixed(1)}" fill="${GOLD}"/>`,
+  ).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <defs>
-    <radialGradient id="bg" cx="35%" cy="25%" r="85%">
-      <stop offset="0%" stop-color="${CREAM}"/>
-      <stop offset="60%" stop-color="${SAND}"/>
-      <stop offset="100%" stop-color="${GOLD}"/>
-    </radialGradient>
-  </defs>
-  <rect width="512" height="512" fill="url(#bg)"/>
-  <path d="${eightPath(256, 256, 190 * scale)}" fill="none" stroke="${TERRACOTTA}" stroke-width="${22 * scale}" stroke-linecap="round"/>
+  <rect width="512" height="512" fill="${IVORY}"/>
+  <text x="256" y="262" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-size="${440 * scale}" fill="${BLUSH}">8</text>
+  ${dots}
 </svg>`;
 }
 

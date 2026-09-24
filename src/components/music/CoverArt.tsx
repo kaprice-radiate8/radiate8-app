@@ -1,8 +1,8 @@
 /**
- * Soft gradient cover art, painted from two colors, with a faint figure eight.
+ * Soft gradient cover art, painted from two colors, with the pale serif 8.
  * Replace with real album images later by passing an image instead.
  */
-import { Figure8 } from "../Figure8";
+import { PaleEight } from "../PaleEight";
 
 export function CoverArt({ colors, size = 72, spinning = false }: { colors: [string, string]; size?: number; spinning?: boolean }) {
   return (
@@ -11,8 +11,8 @@ export function CoverArt({ colors, size = 72, spinning = false }: { colors: [str
       style={{ width: size, height: size, background: `radial-gradient(circle at 30% 25%, ${colors[0]}, ${colors[1]})` }}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgb(255_255_255/0.35),transparent_55%)]" />
-      <div className={`absolute inset-0 flex items-center justify-center text-cream/70 ${spinning ? "animate-breathe" : ""}`}>
-        <Figure8 size={size * 0.55} orientation="infinity" strokeWidth={2.2} />
+      <div className={`absolute inset-0 flex items-center justify-center ${spinning ? "animate-breathe" : ""}`}>
+        <PaleEight size={size * 0.8} color="rgb(255 255 255 / 0.55)" />
       </div>
     </div>
   );

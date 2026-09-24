@@ -19,49 +19,60 @@
 // 1. NAME AND WORDS
 // ------------------------------------------------------------
 export const brand = {
-  /** The app's name. "Rhythm" is a placeholder until the final name is chosen. */
-  appName: "Rhythm",
+  /**
+   * The name shown in the app. The brand guide says to use "Radiate 8" in
+   * public-facing copy while the app name is still being chosen
+   * (working options: Rhythm 8, Rhythm, Becoming).
+   */
+  appName: "Radiate 8",
   /** Shorter name shown under the icon on a phone's home screen. */
-  shortName: "Rhythm",
+  shortName: "Radiate 8",
   /** The brand this app belongs to. */
   brandName: "Radiate 8",
   company: "Radiate Collective, LLC",
   /** Shown on the opening screen. */
   tagline: "Come back to yourself.",
-  /** Gentle triads used as accent lines around the app. */
-  triads: ["Reflect, Release, Reach", "Reflect, Bloom, Become"],
+  /** The brand promise. */
+  promise: "The art of becoming fully alive.",
+  /** The Radiate 8 method, used as the handwritten accent line. */
+  triads: ["Reflect. Bloom. Become."],
   /** Used for browser and search previews. */
   description:
-    "Your daily practice companion from Radiate 8. Reflect, Bloom, Become.",
+    "Your daily practice companion from Radiate 8. Reflect. Bloom. Become.",
 } as const;
 
 // ------------------------------------------------------------
 // 2. COLORS
 // ------------------------------------------------------------
 // Each color becomes a Tailwind class automatically.
-// Example: `cream` can be used as bg-cream, text-cream, border-cream.
+// Example: `plum` can be used as bg-plum, text-plum, border-plum.
 // Keep the names the same and just change the hex values.
+// Main and secondary colors come straight from the Radiate 8 brand guide.
+// Brand readability rule: plum for text, gold and taupe for decoration only.
 export const colors = {
-  /** Page background: warm sand */
-  sand: "#EFE3D3",
-  /** Lighter sand for gradients */
-  sandLight: "#F6EDE1",
-  /** Card surface: soft cream */
-  cream: "#FBF6EE",
-  /** Primary accent: terracotta */
-  terracotta: "#C26A4A",
-  /** Softer earthy accent: clay */
-  clay: "#D49A7A",
-  /** Muted rose */
-  rose: "#C99A94",
-  /** Golden-hour glow */
-  gold: "#D8A865",
-  /** Main text: deep espresso */
-  espresso: "#3B2A22",
-  /** Secondary text: softer brown */
-  cocoa: "#7A5E50",
-  /** Hairlines and dividers */
-  line: "#E6D6C3",
+  // Main palette
+  /** Plum: wordmarks, text, buttons, and dark surfaces */
+  plum: "#4B304A",
+  /** Gold: arcs, dots, and signature details (decorative, not for small text) */
+  gold: "#C18D4A",
+  /** Ivory: primary background and text on plum */
+  ivory: "#F4E7D8",
+
+  // Secondary palette
+  /** Blush: quiet cards, gentle highlights, and the pale numeral 8 */
+  blush: "#E8D2CD",
+  /** Taupe: supporting surfaces, fine dividers, neutral details */
+  taupe: "#B8A999",
+
+  // Supporting tints, made from the colors above
+  /** Softer plum for secondary text (still easy to read on ivory) */
+  plumSoft: "#6E5569",
+  /** Lighter ivory for gentle gradients and chips */
+  ivoryLight: "#F9F1E7",
+  /** Linen: card surfaces that float over the ivory background */
+  linen: "#FCF8F2",
+  /** Hairlines and dividers (a pale taupe) */
+  line: "#E4D6C8",
 } as const;
 
 // ------------------------------------------------------------
@@ -76,56 +87,56 @@ export const dimensions = [
     name: "Career",
     subtitle: "Purpose, work, and the mark you make",
     icon: "briefcase",
-    accent: "#C26A4A",
+    accent: "#7B5A78",
   },
   {
     id: "health",
     name: "Health",
     subtitle: "Body, energy, and how you care for you",
     icon: "heart-pulse",
-    accent: "#D8A865",
+    accent: "#A9B39A",
   },
   {
     id: "relationships",
     name: "Relationships and Love",
     subtitle: "The hearts you hold and who holds yours",
     icon: "heart",
-    accent: "#C98A8A",
+    accent: "#C99199",
   },
   {
     id: "joy",
     name: "Joy",
     subtitle: "Play, delight, and what lights you up",
     icon: "sun",
-    accent: "#E0B35A",
+    accent: "#D3A45C",
   },
   {
     id: "growth",
     name: "Growth",
     subtitle: "Learning, stretching, and becoming",
     icon: "sprout",
-    accent: "#9A9A6A",
+    accent: "#8E9C7C",
   },
   {
     id: "stillness",
     name: "Stillness and Spirit",
     subtitle: "Quiet, faith, and your inner knowing",
     icon: "moon",
-    accent: "#A08AA0",
+    accent: "#9A86A6",
   },
   {
     id: "environment",
     name: "Environment",
     subtitle: "Your home, your spaces, your surroundings",
     icon: "leaf",
-    accent: "#8FA38A",
+    accent: "#93AAAA",
   },
   {
     id: "finances",
     name: "Finances",
     subtitle: "Abundance, ease, and a steady foundation",
     icon: "coins",
-    accent: "#B88A5E",
+    accent: "#A88B6C",
   },
 ] as const;
 
@@ -143,11 +154,11 @@ export function getDimension(id: string): Dimension | undefined {
 // 4. MOOD CHECK-IN ("How are you arriving today?")
 // ------------------------------------------------------------
 export const moods = [
-  { id: "tender", label: "Tender", reply: "Go gently with yourself today." },
-  { id: "tired", label: "Tired", reply: "Rest is part of the rhythm too." },
-  { id: "steady", label: "Steady", reply: "Steady is its own kind of strong." },
-  { id: "open", label: "Open", reply: "Beautiful. Let the day meet you." },
-  { id: "radiant", label: "Radiant", reply: "Let that light spill over." },
+  { id: "calm", label: "Calm", icon: "flower", reply: "Let that ease travel with you." },
+  { id: "hopeful", label: "Hopeful", icon: "sun", reply: "Beautiful. Let the day meet you." },
+  { id: "tender", label: "Tender", icon: "heart", reply: "Go gently with yourself today." },
+  { id: "tired", label: "Tired", icon: "moon", reply: "Rest is part of the rhythm too." },
+  { id: "full", label: "Full", icon: "sparkles", reply: "Let that light spill over." },
 ] as const;
 
 export type MoodId = (typeof moods)[number]["id"];

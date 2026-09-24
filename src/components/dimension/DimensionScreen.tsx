@@ -8,7 +8,7 @@
  */
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getDimension, reflectionSections, type DimensionId } from "@/config/app.config";
+import { brand, getDimension, reflectionSections, type DimensionId } from "@/config/app.config";
 import { dimensionSongs, getSong } from "@/content/music";
 import { useStoreData } from "@/lib/data";
 import { Icon } from "../Icon";
@@ -22,16 +22,16 @@ export function DimensionScreen({ dimensionId }: { dimensionId: DimensionId }) {
 
   return (
     <div>
-      <Link href="/wheel" className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-cocoa">
+      <Link href="/wheel" className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-plum-soft">
         <ChevronLeft size={18} strokeWidth={1.4} /> Wheel
       </Link>
 
       <header className="relative mt-4 overflow-hidden rounded-[2rem] p-6" style={{ background: `linear-gradient(145deg, ${d.accent}33, ${d.accent}10)` }}>
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cream/80" style={{ color: d.accent }}>
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-linen/80" style={{ color: d.accent }}>
           <Icon name={d.icon} size={26} />
         </span>
-        <h1 className="mt-5 font-serif text-4xl leading-tight font-light text-espresso">{d.name}</h1>
-        <p className="mt-2 text-cocoa">{d.subtitle}</p>
+        <h1 className="mt-5 font-serif text-4xl text-plum">{d.name}</h1>
+        <p className="mt-2 text-plum-soft">{d.subtitle}</p>
         {score !== undefined && (
           <p className="mt-4 label">
             Feeling {score} of 10 today
@@ -41,16 +41,16 @@ export function DimensionScreen({ dimensionId }: { dimensionId: DimensionId }) {
 
       <section className="mt-8">
         <p className="label">Reflect</p>
-        <p className="mt-1 font-script text-2xl text-terracotta">Reflect, Release, Reach</p>
+        <p className="mt-1 font-script text-4xl text-plum">{brand.triads[0]}</p>
         <ol className="mt-4 space-y-3">
           {reflectionSections.map((section, i) => (
             <li key={section.id} className="card flex items-center gap-4 p-5">
-              <span className="font-serif text-2xl text-cocoa/50">{i + 1}</span>
-              <span className="font-serif text-xl text-espresso">{section.title}</span>
+              <span className="font-serif text-2xl text-plum-soft/50">{i + 1}</span>
+              <span className="font-serif text-xl text-plum">{section.title}</span>
             </li>
           ))}
         </ol>
-        <p className="mt-3 text-center text-sm text-cocoa/80">Your writing space for each section opens here soon.</p>
+        <p className="mt-3 text-center text-sm text-plum-soft/80">Your writing space for each section opens here soon.</p>
       </section>
 
       <section className="card mt-8 p-5">

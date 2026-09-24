@@ -1,4 +1,4 @@
-# Rhythm (working name)
+# Radiate 8 app (working names: Rhythm 8, Rhythm, Becoming)
 
 The daily practice companion to the Radiate 8 retreat, by Radiate Collective, LLC.
 It's a mobile-first web app that people can install on their phone's home screen and use offline.
@@ -17,6 +17,8 @@ To check that everything builds before sharing: `npm run build`.
 | You want to change... | Edit this file |
 | --- | --- |
 | App name, tagline, colors, the 8 dimensions, mood options, reflection sections | `src/config/app.config.ts` |
+| Fonts (Cormorant Garamond, DM Sans, and the script accent) | `src/config/fonts.ts` |
+| The seven-dot micro mark (logo) | `src/components/MicroMark.tsx` |
 | Songs, Today's Dedication, songs per feeling or dimension | `src/content/music.ts` |
 | Icons available for dimensions | `src/components/Icon.tsx` |
 
@@ -55,10 +57,19 @@ Screens never touch storage directly. They go through `store` in `src/lib/data/s
 listed in `DataStore` (in `src/lib/data/types.ts`), then change the one line in `store.ts`.
 No screen needs to change.
 
-## Writing style for app copy
+## Brand rules the app follows (from the Radiate 8 brand guide)
 
-Warm, intimate, encouraging. Never corporate. **No em dashes.** Gentle triads where natural
-("Reflect, Release, Reach", "Reflect, Bloom, Become").
+- **Colors:** Plum, Gold, Ivory (main); Blush and Taupe (secondary). Plum for text and buttons,
+  Ivory text on Plum. Gold and Taupe are decorative only, never small text.
+- **Type:** Cormorant Garamond leads (headlines, 500). DM Sans explains (body, labels).
+  The script adds feeling: two to six words, and only one script accent per screen.
+- **Logo:** the seven-dot micro mark, centered at the top of every screen. Never change the dot
+  count, order, or size relationships. The current drawing is a close match; swap in the approved
+  master artwork when available.
+- **Script font:** La Luxes Script is a paid font. "Allison" stands in until the licensed web font
+  file is added (steps are at the top of `src/config/fonts.ts`).
+- **Voice:** an invitation, never a demand. Warm, grounded, personal. Lead with one human thought,
+  then one clear action. **No em dashes.** No streaks, no "fix what's falling behind".
 
 ## Changing icons or colors
 

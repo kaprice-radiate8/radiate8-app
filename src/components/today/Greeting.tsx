@@ -5,10 +5,8 @@
  * "Good evening, Kaprice" with today's date and a handwritten accent line.
  */
 import Link from "next/link";
-import { Settings } from "lucide-react";
 import { brand } from "@/config/app.config";
 import { useStoreData } from "@/lib/data";
-import { Figure8 } from "../Figure8";
 
 function timeOfDay(hour: number) {
   if (hour < 5) return "Good night";
@@ -26,20 +24,10 @@ export function Greeting() {
   const triad = brand.triads[ready ? now.getDate() % brand.triads.length : 0];
 
   return (
-    <header className="pt-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-terracotta">
-          <Figure8 size={22} strokeWidth={5} />
-          <span className="label !text-terracotta">{brand.appName}</span>
-        </div>
-        <Link href="/settings" aria-label="Settings" className="rounded-full p-2 text-cocoa/70 transition-colors hover:text-espresso">
-          <Settings size={20} strokeWidth={1.4} />
-        </Link>
-      </div>
-
-      <div className={`mt-8 transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}>
+    <section>
+      <div className={`mt-6 transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}>
         <p className="label">{ready ? dateLine : " "}</p>
-        <h1 className="mt-2 font-serif text-[2.6rem] leading-[1.05] font-light text-espresso">
+        <h1 className="mt-2 font-serif text-[2.6rem] text-plum">
           {ready ? timeOfDay(now.getHours()) : "Welcome"}
           {profile?.name ? (
             <>
@@ -48,13 +36,13 @@ export function Greeting() {
             </>
           ) : null}
         </h1>
-        <p className="mt-3 font-script text-2xl text-terracotta">{triad}</p>
+        <p className="mt-3 font-script text-4xl text-plum">{triad}</p>
         {ready && !profile?.name && (
-          <Link href="/settings" className="mt-2 inline-block text-sm text-cocoa underline decoration-line underline-offset-4">
+          <Link href="/settings" className="mt-2 inline-block text-sm text-plum-soft underline decoration-line underline-offset-4">
             Tell us what to call you
           </Link>
         )}
       </div>
-    </header>
+    </section>
   );
 }

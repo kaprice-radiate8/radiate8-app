@@ -31,9 +31,9 @@ export function AttentionPrompt() {
       >
         <div>
           <p className="label">Your focus</p>
-          <h2 className="mt-2 font-serif text-2xl leading-snug text-espresso">What needs your attention today?</h2>
+          <h2 className="mt-2 font-serif text-2xl leading-snug text-plum">What needs your attention today?</h2>
         </div>
-        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sand-light text-terracotta transition-transform duration-500 ${open ? "rotate-90" : ""}`}>
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ivory-light text-plum transition-transform duration-500 ${open ? "rotate-90" : ""}`}>
           <ChevronRight size={20} strokeWidth={1.5} />
         </span>
       </button>
@@ -48,7 +48,7 @@ export function AttentionPrompt() {
                   type="button"
                   onClick={() => choose(d.id)}
                   tabIndex={open ? 0 : -1}
-                  className="flex w-full items-center gap-2.5 rounded-2xl border border-line/80 bg-sand-light/50 px-3 py-3 text-left text-sm text-espresso transition-colors duration-300 hover:border-clay active:scale-[0.98]"
+                  className="flex w-full items-center gap-2.5 rounded-2xl border border-line/80 bg-ivory-light/50 px-3 py-3 text-left text-sm text-plum transition-colors duration-300 hover:border-taupe active:scale-[0.98]"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: `${d.accent}26`, color: d.accent }}>
                     <Icon name={d.icon} size={16} />

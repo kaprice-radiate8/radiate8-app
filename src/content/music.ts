@@ -26,21 +26,21 @@ export const songs: Song[] = [
     title: "Golden Hour Homecoming",
     artist: "Placeholder Artist",
     src: "/audio/golden-hour.wav",
-    cover: ["#E9B77E", "#C26A4A"],
+    cover: ["#E3BC85", "#C18D4A"],
   },
   {
     id: "morning-tide",
     title: "Morning Tide",
     artist: "Placeholder Artist",
     src: "/audio/morning-tide.wav",
-    cover: ["#E8D2BD", "#8FA38A"],
+    cover: ["#EAD9CF", "#B8A999"],
   },
   {
     id: "still-water",
     title: "Still Water",
     artist: "Placeholder Artist",
     src: "/audio/still-water.wav",
-    cover: ["#E4CFD6", "#A08AA0"],
+    cover: ["#E8D2CD", "#8E6F8B"],
   },
 ];
 

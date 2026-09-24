@@ -28,10 +28,10 @@ export function SettingsScreen() {
 
   return (
     <div>
-      <Link href="/" className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-cocoa">
+      <Link href="/" className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-plum-soft">
         <ChevronLeft size={18} strokeWidth={1.4} /> Today
       </Link>
-      <h1 className="mt-4 font-serif text-4xl font-light text-espresso">Settings</h1>
+      <h1 className="mt-4 font-serif text-4xl text-plum">Settings</h1>
 
       <form onSubmit={save} className="card mt-6 p-5">
         <label htmlFor="name" className="label">
@@ -44,19 +44,19 @@ export function SettingsScreen() {
           disabled={!ready}
           autoComplete="given-name"
           placeholder="Your first name"
-          className="mt-3 w-full border-b border-line bg-transparent pb-2 font-serif text-3xl text-espresso outline-none placeholder:text-cocoa/40 focus:border-terracotta"
+          className="mt-3 w-full border-b border-line bg-transparent pb-2 font-serif text-3xl text-plum outline-none placeholder:text-plum-soft/40 focus:border-plum"
         />
         <div className="mt-6 flex items-center gap-4">
-          <button type="submit" disabled={!ready} className="rounded-full bg-terracotta px-6 py-3 text-sm tracking-[0.2em] text-cream uppercase transition-transform active:scale-95">
+          <button type="submit" disabled={!ready} className="rounded-full bg-plum px-6 py-3 text-sm font-medium tracking-[0.2em] text-ivory uppercase transition-transform active:scale-95">
             Save
           </button>
-          <p className={`font-script text-xl text-terracotta transition-opacity duration-500 ${saved ? "opacity-100" : "opacity-0"}`} aria-live="polite">
+          <p className={`font-script text-3xl text-plum transition-opacity duration-500 ${saved ? "opacity-100" : "opacity-0"}`} aria-live="polite">
             Lovely, it&apos;s saved.
           </p>
         </div>
       </form>
 
-      <p className="mt-8 text-center text-xs leading-relaxed text-cocoa/70">
+      <p className="mt-8 text-center text-xs leading-relaxed text-plum-soft/70">
         Everything you write stays private on this device.
         <br />
         {brand.brandName} · {brand.company}

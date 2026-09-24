@@ -66,7 +66,7 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
       inert={!open}
     >
       {/* Dimmed background, tap to close */}
-      <div onClick={close} className={`absolute inset-0 bg-espresso/25 backdrop-blur-[2px] transition-opacity duration-500 ${open ? "opacity-100" : "opacity-0"}`} />
+      <div onClick={close} className={`absolute inset-0 bg-plum/25 backdrop-blur-[2px] transition-opacity duration-500 ${open ? "opacity-100" : "opacity-0"}`} />
 
       <div
         ref={panelRef}
@@ -74,7 +74,7 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={d?.name}
-        className={`absolute inset-x-0 bottom-0 mx-auto max-w-md rounded-t-[2rem] bg-cream px-6 pt-3 pb-[max(1.75rem,env(safe-area-inset-bottom))] shadow-2xl outline-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`absolute inset-x-0 bottom-0 mx-auto max-w-md rounded-t-[2rem] bg-linen px-6 pt-3 pb-[max(1.75rem,env(safe-area-inset-bottom))] shadow-2xl outline-none transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
       >
@@ -86,10 +86,10 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
                 <Icon name={d.icon} size={22} />
               </span>
               <div className="flex-1">
-                <h2 className="font-serif text-3xl leading-tight text-espresso">{d.name}</h2>
-                <p className="mt-1 text-sm text-cocoa">{d.subtitle}</p>
+                <h2 className="font-serif text-3xl leading-tight text-plum">{d.name}</h2>
+                <p className="mt-1 text-sm text-plum-soft">{d.subtitle}</p>
               </div>
-              <button type="button" onClick={close} aria-label="Close" className="-mt-1 -mr-2 rounded-full p-2 text-cocoa/70 hover:text-espresso">
+              <button type="button" onClick={close} aria-label="Close" className="-mt-1 -mr-2 rounded-full p-2 text-plum-soft/70 hover:text-plum">
                 <X size={20} strokeWidth={1.4} />
               </button>
             </div>
@@ -97,11 +97,11 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
             <div className="mt-7">
               <p className="label">How full does this feel right now?</p>
               <div className="mt-3 flex items-baseline justify-between">
-                <p className="font-serif text-5xl font-light text-espresso">
+                <p className="font-serif text-5xl text-plum">
                   {score ?? "·"}
-                  <span className="text-2xl text-cocoa/60"> / 10</span>
+                  <span className="text-2xl text-plum-soft/60"> / 10</span>
                 </p>
-                <p className="font-script text-xl" style={{ color: d.accent }}>
+                <p className="font-serif text-xl italic text-plum-soft">
                   {feelingFor(score)}
                 </p>
               </div>
@@ -122,7 +122,7 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
                   background: `linear-gradient(to right, ${d.accent} ${(score ?? 0) * 10}%, var(--r8-line) ${(score ?? 0) * 10}%)`,
                 }}
               />
-              <div className="mt-2 flex justify-between text-[0.65rem] tracking-[0.18em] text-cocoa/60 uppercase">
+              <div className="mt-2 flex justify-between text-[0.65rem] tracking-[0.18em] text-plum-soft/60 uppercase">
                 <span>Longing</span>
                 <span>Overflowing</span>
               </div>
@@ -134,7 +134,7 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
                 touched.current = false;
                 store.logAttention(d.id, "wheel");
               }}
-              className="mt-7 flex w-full items-center justify-center rounded-full bg-espresso px-6 py-4 text-sm tracking-[0.2em] text-cream uppercase transition-transform active:scale-[0.98]"
+              className="mt-7 flex w-full items-center justify-center rounded-full bg-plum px-6 py-4 text-sm font-medium tracking-[0.2em] text-ivory uppercase transition-transform active:scale-[0.98]"
             >
               Reflect on {d.name}
             </Link>

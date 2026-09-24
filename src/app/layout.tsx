@@ -4,28 +4,15 @@
  * the shared music player, and the bottom navigation.
  */
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Dancing_Script, Jost } from "next/font/google";
 import { brand, colors } from "@/config/app.config";
+import { fontVariables } from "@/config/fonts";
 import { themeCss } from "@/config/theme-css";
 import { AudioProvider } from "@/components/music/AudioProvider";
 import { BottomNav } from "@/components/BottomNav";
 import { GoldenBackground } from "@/components/GoldenBackground";
+import { SiteHeader } from "@/components/SiteHeader";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
-
-// Elegant high-contrast serif for headlines
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
-});
-
-// Handwritten script for emotional accent lines
-const dancing = Dancing_Script({ variable: "--font-dancing", subsets: ["latin"] });
-
-// Clean sans for labels and small text
-const jost = Jost({ variable: "--font-jost", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: { default: brand.appName, template: `%s · ${brand.appName}` },
@@ -35,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: colors.sand,
+  themeColor: colors.ivory,
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -43,7 +30,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${dancing.variable} ${jost.variable} antialiased`}>
+    <html lang="en" className={`${fontVariables} antialiased`}>
       <head>
         {/* Colors from app.config.ts, turned into CSS variables */}
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
@@ -52,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <GoldenBackground />
         <AudioProvider>
           <main className="mx-auto min-h-dvh w-full max-w-md px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-32">
+            <SiteHeader />
             {children}
           </main>
           <BottomNav />
