@@ -46,12 +46,16 @@ function scaleFor(score: number) {
 type Props = {
   scores: WheelScores | undefined;
   selectedId?: DimensionId | null;
-  onSelect: (id: DimensionId) => void;
+  onSelect?: (id: DimensionId) => void;
+  /** Display only (used in onboarding): nothing is tappable. */
+  decorative?: boolean;
 };
 
-export function Wheel({ scores, selectedId, onSelect }: Props) {
+export function Wheel({ scores, selectedId, onSelect, decorative = false }: Props) {
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="h-auto w-full touch-manipulation select-none" role="group" aria-label="Radiate 8 wheel">
+    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="h-auto w-full touch-manipulation select-none"
+      {...(decorative ? { "aria-hidden": true } : { role: "group", "aria-label": "Radiate 8 wheel" })}
+    >
       <defs>
         <radialGradient id="petal-sheen" cx="50%" cy="50%" r="50%">
           <stop offset="30%" stopColor="#fff" stopOpacity="0" />
@@ -69,17 +73,21 @@ export function Wheel({ scores, selectedId, onSelect }: Props) {
         return (
           <g
             key={d.id}
-            role="button"
-            tabIndex={0}
-            aria-label={`${d.name}, ${scores?.[d.id] ?? "not yet rated"}${scores?.[d.id] !== undefined ? " of 10" : ""}`}
-            onClick={() => onSelect(d.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onSelect(d.id);
-              }
-            }}
-            className="group cursor-pointer outline-none"
+            {...(decorative
+              ? {}
+              : {
+                  role: "button",
+                  tabIndex: 0,
+                  "aria-label": `${d.name}, ${scores?.[d.id] ?? "not yet rated"}${scores?.[d.id] !== undefined ? " of 10" : ""}`,
+                  onClick: () => onSelect?.(d.id),
+                  onKeyDown: (e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelect?.(d.id);
+                    }
+                  },
+                })}
+            className={`group outline-none ${decorative ? "" : "cursor-pointer"}`}
           >
             {/* Empty petal (the track) */}
             <path

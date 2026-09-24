@@ -12,6 +12,8 @@ import { MicroMark } from "./MicroMark";
 
 export function SiteHeader() {
   const pathname = usePathname();
+  // Onboarding shows its own larger mark.
+  if (pathname.startsWith("/welcome")) return null;
   return (
     <header className="relative flex justify-center pb-2">
       <Link href="/" aria-label="Radiate 8, go to Today">

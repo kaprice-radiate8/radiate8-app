@@ -9,7 +9,7 @@
  *
  * After changing which screens exist, bump VERSION so phones refresh their copy.
  */
-const VERSION = "rhythm-v2";
+const VERSION = "rhythm-v3";
 
 const CORE = [
   "/",
@@ -18,6 +18,7 @@ const CORE = [
   "/moments",
   "/music",
   "/settings",
+  "/welcome",
   // One page per dimension. Keep in sync with dimensions in app.config.ts.
   "/dimension/career",
   "/dimension/health",

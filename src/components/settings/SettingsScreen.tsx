@@ -56,6 +56,11 @@ export function SettingsScreen() {
         </div>
       </form>
 
+      <Link href="/welcome" className="card mt-4 flex items-center justify-between p-5 text-plum">
+        <span className="font-serif text-xl">Replay the welcome</span>
+        <span className="label">View</span>
+      </Link>
+
       <p className="mt-8 text-center text-xs leading-relaxed text-plum-soft/70">
         Everything you write stays private on this device.
         <br />
