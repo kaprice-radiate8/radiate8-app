@@ -14,6 +14,7 @@ import { ArrowRight, RefreshCw } from "lucide-react";
 import { reflectionSections, type Dimension, type ReflectionSectionId } from "@/config/app.config";
 import { getPrompts } from "@/content/prompts";
 import { store } from "@/lib/data";
+import { SaveNotice } from "../SaveNotice";
 import { AutoGrowTextarea } from "./AutoGrowTextarea";
 
 const noSubscribe = () => () => {};
@@ -24,6 +25,10 @@ export function JournalComposer({ dimension }: { dimension: Dimension }) {
   const [promptIndex, setPromptIndex] = useState(0);
   const [text, setText] = useState("");
   const [savedNote, setSavedNote] = useState(false);
+  // Set when this page could not be saved; her words stay in the box.
+  const [saveFailed, setSaveFailed] = useState(false);
+  // Set when drafts can't be kept on this device, so she knows to save before leaving.
+  const [draftsFailing, setDraftsFailing] = useState(false);
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const draftKey = `${dimension.id}:${sectionId}`;
@@ -43,31 +48,50 @@ export function JournalComposer({ dimension }: { dimension: Dimension }) {
     };
   }, [draftKey]);
 
+  /** Keep a draft, and note whether this device is letting us. */
+  function keepDraft(key: string, value: string) {
+    store.setDraft(key, value).then(
+      () => setDraftsFailing(false),
+      () => setDraftsFailing(true),
+    );
+  }
+
   // Save a draft shortly after typing pauses, so nothing is ever lost.
   function onWrite(value: string) {
     setText(value);
     setSavedNote(false);
     if (draftTimer.current) clearTimeout(draftTimer.current);
-    draftTimer.current = setTimeout(() => store.setDraft(draftKey, value), 400);
+    draftTimer.current = setTimeout(() => keepDraft(draftKey, value), 400);
   }
 
   function chooseSection(id: ReflectionSectionId) {
     if (draftTimer.current) {
       clearTimeout(draftTimer.current);
-      store.setDraft(draftKey, text); // keep what was written in the section being left
+      keepDraft(draftKey, text); // keep what was written in the section being left
     }
     setSectionId(id);
     setPromptIndex(0);
     setSavedNote(false);
+    setSaveFailed(false);
   }
 
   async function save() {
     const words = text.trim();
     if (!words) return;
     if (draftTimer.current) clearTimeout(draftTimer.current);
-    await store.addJournalEntry({ dimensionId: dimension.id, sectionId, prompt, text: words });
-    await store.setDraft(draftKey, "");
+    try {
+      await store.addJournalEntry({ dimensionId: dimension.id, sectionId, prompt, text: words });
+    } catch {
+      // Not saved: keep her words exactly where they are and say so plainly.
+      setSavedNote(false);
+      setSaveFailed(true);
+      return;
+    }
+    // The page is safe. Clearing the draft is tidy-up, so a failure there doesn't matter.
+    await store.setDraft(draftKey, "").catch(() => {});
     await store.logAttention(dimension.id, "reflection");
+    setSaveFailed(false);
+    setDraftsFailing(false); // a page just saved, so saving works again
     setText("");
     setPromptIndex((i) => i + 1); // a fresh prompt for next time
     setSavedNote(true);
@@ -137,13 +161,22 @@ export function JournalComposer({ dimension }: { dimension: Dimension }) {
           Save reflection <ArrowRight size={16} strokeWidth={1.6} />
         </button>
       </div>
-      <p className="mt-3 text-right" aria-live="polite">
-        {savedNote ? (
-          <span className="rise inline-block font-serif text-lg text-plum italic">Saved to your journal.</span>
-        ) : (
-          <span className="text-xs text-plum-soft/80">Your words are kept safe on this device as you write.</span>
-        )}
-      </p>
+      {saveFailed ? (
+        <SaveNotice
+          className="mt-3"
+          message="This page didn't save, but your words are still here. Please try again in a moment. If it keeps happening, your phone may be low on space or in private browsing."
+        />
+      ) : draftsFailing ? (
+        <SaveNotice className="mt-3" message="Drafts can't be kept on this device right now, so please save your page before you leave." />
+      ) : (
+        <p className="mt-3 text-right" aria-live="polite">
+          {savedNote ? (
+            <span className="rise inline-block font-serif text-lg text-plum italic">Saved to your journal.</span>
+          ) : (
+            <span className="text-xs text-plum-soft/80">Your words are kept safe on this device as you write.</span>
+          )}
+        </p>
+      )}
     </section>
   );
 }

@@ -6,13 +6,14 @@
  * Shows the dimension, lets you set how full it feels (0 to 10),
  * and opens the deeper reflection page.
  */
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { X } from "lucide-react";
 import type { Dimension } from "@/config/app.config";
 import { store } from "@/lib/data";
 import { Icon } from "../Icon";
+import { SaveNotice } from "../SaveNotice";
 
 /** A gentle word for each part of the scale, never a grade. */
 function feelingFor(score: number | undefined) {
@@ -38,6 +39,7 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   // Remember whether the score was touched so we can note it for My Rhythm once.
   const touched = useRef(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -51,6 +53,7 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
 
   function close() {
     if (touched.current && d) store.logAttention(d.id, "wheel");
+    setSaveFailed(false); // start fresh next time the panel opens
     onClose();
   }
 
@@ -113,7 +116,10 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
                 value={score ?? 0}
                 onChange={(e) => {
                   touched.current = true;
-                  store.setWheelScore(d.id, Number(e.target.value));
+                  store.setWheelScore(d.id, Number(e.target.value)).then(
+                    () => setSaveFailed(false),
+                    () => setSaveFailed(true),
+                  );
                 }}
                 aria-label={`How full ${d.name} feels, 0 to 10`}
                 className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full bg-line"
@@ -126,6 +132,7 @@ export function DimensionSheet({ dimension: d, open, score, onClose }: Props) {
                 <span>Longing</span>
                 <span>Overflowing</span>
               </div>
+              <SaveNotice className="mt-4" message={saveFailed ? "That change didn't save. Please try again in a moment." : null} />
             </div>
 
             <Link

@@ -55,6 +55,10 @@ export type NewJournalEntry = Pick<JournalEntry, "dimensionId" | "sectionId" | "
  * THE CONTRACT
  * Any storage (browser, Supabase, anything else) must provide these functions.
  * Every function returns a Promise so a network backend fits without changes.
+ *
+ * Saving functions must reject with a SaveError (see errors.ts) when the data
+ * was not saved, so screens never say "Saved" when it wasn't.
+ * The one exception is logAttention, a background note that never rejects.
  */
 export interface DataStore {
   getProfile(): Promise<Profile>;

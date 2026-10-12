@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { reflectionSections, type DimensionId } from "@/config/app.config";
 import { store, useStoreData, type JournalEntry } from "@/lib/data";
+import { SaveNotice } from "../SaveNotice";
 import { AutoGrowTextarea } from "./AutoGrowTextarea";
 
 function dayLabel(iso: string) {
@@ -69,14 +70,33 @@ function JournalPage({ page }: { page: JournalEntry }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
   const section = reflectionSections.find((s) => s.id === page.sectionId);
   const time = new Date(page.createdAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 
   async function saveEdit() {
     if (editing === null) return;
     const words = editing.trim();
-    if (words) await store.updateJournalEntry(page.id, words);
+    if (words) {
+      try {
+        await store.updateJournalEntry(page.id, words);
+      } catch {
+        // Keep the editor open with her changes so nothing is lost.
+        setProblem("Your changes didn't save. They're still here, so please try again in a moment.");
+        return;
+      }
+    }
+    setProblem(null);
     setEditing(null);
+  }
+
+  async function letGo() {
+    try {
+      await store.deleteJournalEntry(page.id);
+    } catch {
+      setProblem("This page couldn't be let go just now. Please try again in a moment.");
+      setConfirmingDelete(false);
+    }
   }
 
   return (
@@ -103,7 +123,13 @@ function JournalPage({ page }: { page: JournalEntry }) {
             className="rounded-xl px-3 pl-10 font-serif text-xl leading-8 text-plum outline-none"
           />
           <div className="mt-3 flex justify-end gap-2">
-            <button type="button" onClick={() => setEditing(null)} className="rounded-full px-4 py-2 text-sm text-plum-soft">
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(null);
+                setProblem(null);
+              }}
+              className="rounded-full px-4 py-2 text-sm text-plum-soft">
               Cancel
             </button>
             <button type="button" onClick={saveEdit} className="rounded-full bg-plum px-5 py-2 text-sm font-medium text-ivory">
@@ -122,7 +148,7 @@ function JournalPage({ page }: { page: JournalEntry }) {
               <button type="button" onClick={() => setConfirmingDelete(false)} className="rounded-full px-3 py-1.5 text-sm text-plum">
                 Keep it
               </button>
-              <button type="button" onClick={() => store.deleteJournalEntry(page.id)} className="rounded-full bg-plum px-4 py-1.5 text-sm text-ivory">
+              <button type="button" onClick={letGo} className="rounded-full bg-plum px-4 py-1.5 text-sm text-ivory">
                 Let it go
               </button>
             </>
@@ -138,6 +164,7 @@ function JournalPage({ page }: { page: JournalEntry }) {
           )}
         </div>
       )}
+      <SaveNotice message={problem} className="mx-5 mb-5" />
     </li>
   );
 }

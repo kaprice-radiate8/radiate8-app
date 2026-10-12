@@ -5,14 +5,24 @@
  * Soft round choices (as in the brand guide's app mockup). One tap saves
  * today's answer, and a gentle line answers back.
  */
+import { useState } from "react";
 import { moods } from "@/config/app.config";
 import { store, todayKey, useStoreData } from "@/lib/data";
 import { Icon } from "../Icon";
+import { SaveNotice } from "../SaveNotice";
 
 export function MoodCheckIn() {
   const today = todayKey();
   const { data: entry } = useStoreData((s) => s.getMood(today));
   const selected = moods.find((m) => m.id === entry?.moodId);
+  const [saveFailed, setSaveFailed] = useState(false);
+
+  function choose(moodId: (typeof moods)[number]["id"]) {
+    store.setMood(today, moodId).then(
+      () => setSaveFailed(false),
+      () => setSaveFailed(true),
+    );
+  }
 
   return (
     <section className="card p-5">
@@ -28,7 +38,7 @@ export function MoodCheckIn() {
               type="button"
               role="radio"
               aria-checked={active}
-              onClick={() => store.setMood(today, mood.id)}
+              onClick={() => choose(mood.id)}
               className="group flex flex-col items-center gap-2"
             >
               <span
@@ -48,6 +58,7 @@ export function MoodCheckIn() {
       <p key={selected?.id ?? "none"} className={`mt-4 min-h-7 text-center font-serif text-lg text-plum-soft italic ${selected ? "rise" : "opacity-0"}`}>
         {selected?.reply ?? " "}
       </p>
+      <SaveNotice message={saveFailed ? "That didn't save. Please tap again in a moment." : null} />
     </section>
   );
 }

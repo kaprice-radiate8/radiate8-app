@@ -9,18 +9,27 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { brand } from "@/config/app.config";
 import { store, useStoreData } from "@/lib/data";
+import { SaveNotice } from "../SaveNotice";
 
 export function SettingsScreen() {
   const { data: profile, ready } = useStoreData((s) => s.getProfile());
   // `draft` is what's typed; until they type, show the saved name.
   const [draft, setDraft] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
   const value = draft ?? profile?.name ?? "";
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!profile) return;
-    await store.saveProfile({ ...profile, name: value.trim() });
+    try {
+      await store.saveProfile({ ...profile, name: value.trim() });
+    } catch {
+      setSaved(false);
+      setSaveFailed(true);
+      return;
+    }
+    setSaveFailed(false);
     setDraft(null);
     setSaved(true);
     setTimeout(() => setSaved(false), 2400);
@@ -54,6 +63,7 @@ export function SettingsScreen() {
             Lovely, it&apos;s saved.
           </p>
         </div>
+        <SaveNotice className="mt-4" message={saveFailed ? "Your name didn't save. Please try again in a moment." : null} />
       </form>
 
       <Link href="/welcome" className="card mt-4 flex items-center justify-between p-5 text-plum">

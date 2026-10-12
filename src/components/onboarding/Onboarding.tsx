@@ -18,6 +18,7 @@ import { brand } from "@/config/app.config";
 import { store, useStoreData, type WheelScores } from "@/lib/data";
 import { MicroMark } from "../MicroMark";
 import { PaleEight } from "../PaleEight";
+import { SaveNotice } from "../SaveNotice";
 import { Wheel } from "../wheel/Wheel";
 
 const TOTAL_STEPS = 4;
@@ -40,6 +41,7 @@ export function Onboarding() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState<string | null>(null);
   const [wheelScores, setWheelScores] = useState<WheelScores>({});
+  const [saveFailed, setSaveFailed] = useState(false);
 
   // On the wheel step, let the petals fill a moment after it appears.
   useEffect(() => {
@@ -55,11 +57,17 @@ export function Onboarding() {
 
   async function finish(skipName = false) {
     const current = profile ?? { name: "", onboardedAt: null };
-    await store.saveProfile({
-      ...current,
-      name: skipName ? current.name : nameValue.trim(),
-      onboardedAt: current.onboardedAt ?? new Date().toISOString(),
-    });
+    try {
+      await store.saveProfile({
+        ...current,
+        name: skipName ? current.name : nameValue.trim(),
+        onboardedAt: current.onboardedAt ?? new Date().toISOString(),
+      });
+    } catch {
+      // Stay here: without a saved profile she'd be sent back to the welcome.
+      setSaveFailed(true);
+      return;
+    }
     router.replace("/");
   }
 
@@ -158,6 +166,14 @@ export function Onboarding() {
               autoFocus
               placeholder="Your first name"
               className="mt-8 w-full border-b border-line bg-transparent pb-2 font-serif text-4xl text-plum outline-none placeholder:text-plum-soft/40 focus:border-plum"
+            />
+            <SaveNotice
+              className="mt-6"
+              message={
+                saveFailed
+                  ? "We couldn't save that on this device. Please check that your browser allows websites to save data (private browsing can block it), then try again."
+                  : null
+              }
             />
           </form>
         )}

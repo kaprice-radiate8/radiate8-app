@@ -16,6 +16,7 @@ import type {
   Profile,
   WheelScores,
 } from "./types";
+import { SaveError } from "./errors";
 
 /** Every key is prefixed so it never collides with other sites or old versions. */
 const PREFIX = "rhythm:v1:";
@@ -55,21 +56,21 @@ function newId(): string {
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/** Save without telling every screen (used for drafts, which save on each keystroke). */
+/**
+ * Save without telling every screen (used for drafts, which save on each keystroke).
+ * Throws SaveError if the browser refuses (storage full, or saving blocked).
+ */
 function writeQuietly(key: string, value: unknown) {
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Storage full or blocked. The app keeps working for this session.
+  } catch (cause) {
+    throw new SaveError(cause);
   }
 }
 
+/** Save, then tell every screen so they refresh. Throws SaveError if saving fails. */
 function write(key: string, value: unknown) {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Storage full or blocked. The app keeps working for this session.
-  }
+  writeQuietly(key, value);
   listeners.forEach((fn) => fn());
 }
 
@@ -105,7 +106,11 @@ export const localStore: DataStore = {
   async logAttention(dimensionId, source) {
     const log = read<AttentionEntry[]>(KEYS.attention, []);
     log.push({ dimensionId, source, at: new Date().toISOString() });
-    write(KEYS.attention, log.slice(-MAX_ATTENTION_ENTRIES));
+    try {
+      write(KEYS.attention, log.slice(-MAX_ATTENTION_ENTRIES));
+    } catch {
+      // A background note, not something she saved. Never interrupt her for it.
+    }
   },
   async getAttention(sinceISO) {
     return read<AttentionEntry[]>(KEYS.attention, []).filter((e) => e.at >= sinceISO);
