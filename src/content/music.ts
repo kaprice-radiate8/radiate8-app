@@ -4,13 +4,11 @@
  * Placeholder songs for now. To add a real song later:
  *   1. Put the audio file in public/audio/ (or use a streaming link)
  *   2. Add an entry to `songs` below
- *   3. Reference its id in a collection, a dimension, or the daily dedication
+ *   3. Add its id to the dedication rotation below
  *
  * `cover` is a pair of colors used to paint soft gradient cover art,
  * so no image files are needed until real artwork exists.
  */
-import type { DimensionId } from "@/config/app.config";
-
 export type Song = {
   id: string;
   title: string;
@@ -59,22 +57,3 @@ export function getTodaysDedication(date = new Date()): Song {
   const id = dedicationRotation[dayNumber % dedicationRotation.length];
   return getSong(id) ?? songs[0];
 }
-
-/** Songs organized by feeling, for the Music library. */
-export const feelingCollections = [
-  { id: "joy", title: "Songs for Joy", songIds: ["golden-hour", "morning-tide"] },
-  { id: "courage", title: "Songs for Courage", songIds: ["morning-tide", "golden-hour"] },
-  { id: "stillness", title: "Songs for Stillness", songIds: ["still-water"] },
-];
-
-/** "Songs for [dimension]" shown on each dimension page. */
-export const dimensionSongs: Record<DimensionId, string[]> = {
-  career: ["golden-hour", "morning-tide"],
-  health: ["morning-tide"],
-  relationships: ["golden-hour", "still-water"],
-  joy: ["golden-hour"],
-  growth: ["morning-tide", "golden-hour"],
-  stillness: ["still-water"],
-  environment: ["morning-tide", "still-water"],
-  finances: ["golden-hour"],
-};

@@ -1,25 +1,16 @@
 "use client";
 
 /**
- * JOURNAL PAGES: everything written for one dimension, newest first,
- * gathered under the day it was written. Tap a page to read all of it,
- * edit it, or let it go.
+ * JOURNAL PAGES: everything she wrote in Reflect, Bloom or Become for one
+ * dimension, newest first, gathered under the day it was written.
+ * Tap a page to read all of it, edit it, or let it go.
  */
 import { useState } from "react";
-import { reflectionSections, type DimensionId } from "@/config/app.config";
+import { movements, type DimensionId } from "@/config/app.config";
 import { store, useStoreData, type JournalEntry } from "@/lib/data";
+import { dayLabel } from "@/lib/dates";
 import { SaveNotice } from "../SaveNotice";
 import { AutoGrowTextarea } from "./AutoGrowTextarea";
-
-function dayLabel(iso: string) {
-  const date = new Date(iso);
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-  if (date.toDateString() === today.toDateString()) return "Today";
-  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: date.getFullYear() === today.getFullYear() ? undefined : "numeric" });
-}
 
 export function JournalPages({ dimensionId }: { dimensionId: DimensionId }) {
   const { data: pages, ready } = useStoreData((s) => s.listJournal(dimensionId));
@@ -37,17 +28,10 @@ export function JournalPages({ dimensionId }: { dimensionId: DimensionId }) {
 
   return (
     <section>
-      <div className="flex items-baseline justify-between">
-        <p className="label">Your pages</p>
-        {pages && pages.length > 0 && (
-          <p className="text-sm text-plum-soft">
-            {pages.length} {pages.length === 1 ? "page" : "pages"} written
-          </p>
-        )}
-      </div>
+      <p className="label">Your pages</p>
 
       {groups.length === 0 ? (
-        <p className="mt-4 font-serif text-lg text-plum-soft italic">Your pages will gather here, one reflection at a time.</p>
+        <p className="mt-4 font-serif text-lg text-plum-soft italic">Your pages from Reflect, Bloom and Become will gather here.</p>
       ) : (
         <div className="mt-4 space-y-6">
           {groups.map((group) => (
@@ -71,7 +55,7 @@ function JournalPage({ page }: { page: JournalEntry }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const section = reflectionSections.find((s) => s.id === page.sectionId);
+  const movement = movements.find((m) => m.id === page.movement);
   const time = new Date(page.createdAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 
   async function saveEdit() {
@@ -103,7 +87,7 @@ function JournalPage({ page }: { page: JournalEntry }) {
     <li className="card overflow-hidden">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="block w-full p-5 text-left">
         <div className="flex items-baseline justify-between gap-3">
-          <p className="label">{section?.title}</p>
+          <p className="label">{movement?.title}</p>
           <p className="shrink-0 text-xs text-plum-soft">{time}</p>
         </div>
         <p className="mt-2 font-serif text-lg leading-snug text-plum-soft italic">{page.prompt}</p>

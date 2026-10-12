@@ -16,37 +16,46 @@ To check that everything builds before sharing: `npm run build`.
 
 | You want to change... | Edit this file |
 | --- | --- |
-| App name, tagline, colors, the 8 dimensions, mood options, reflection sections | `src/config/app.config.ts` |
+| App name, tagline, colors, the 8 dimensions, mood options, the words shown for each place on the Radiate 8 | `src/config/app.config.ts` |
+| The Reflect, Bloom, Become questions, and "What do you notice?" | `src/content/prompts.ts` |
 | Fonts (Cormorant Garamond, DM Sans, and the script accent) | `src/config/fonts.ts` |
 | The seven-dot micro mark (logo) | `src/components/MicroMark.tsx` |
-| Songs, Today's Dedication, songs per feeling or dimension | `src/content/music.ts` |
+| Songs and Today's Dedication | `src/content/music.ts` |
 | Icons available for dimensions | `src/components/Icon.tsx` |
 
 Other folders:
 
 ```
 src/
-  app/                 One folder per screen (its web address)
-    page.tsx           Today (/)
-    wheel/             The Radiate 8 Wheel (/wheel)
-    dimension/[id]/    One page per dimension (/dimension/joy ...)
-    settings/          Settings (/settings)
-    rhythm/ moments/ music/   Placeholders, built next
-    layout.tsx         The frame around every screen (fonts, background, tab bar)
-    manifest.ts        How the app installs on a phone
-  components/          The building blocks each screen is made from
-    today/             Pieces of the Today screen
-    wheel/             The wheel and its pop-up sheet
-    music/             Song cards and the shared music player
-  config/              The one config file (plus a helper that turns colors into CSS)
-  content/             Songs and other editable content
-  lib/data/            Saving and loading (see below)
+  app/                   One folder per screen (its web address)
+    page.tsx             Today (/)
+    radiate8/            Radiate 8 home (/radiate8), the assessment (/assess),
+                         compare (/compare) and Reflect, Bloom, Become (/explore)
+    dimension/[id]/      One page per dimension (/dimension/joy ...)
+    moments/ stories/    Placeholders until photo storage exists
+    profile/             Profile (/profile)
+    welcome/             First-visit onboarding (/welcome)
+    layout.tsx           The frame around every screen (fonts, background, tab bar)
+    manifest.ts          How the app installs on a phone
+  components/            The building blocks each screen is made from
+    radiate8/            Assessment, compare, Become choices, dimension picker
+    journey/             Reflect, Bloom, Become
+    today/  journal/  music/  onboarding/  wheel/
+  config/                The one config file (plus a helper that turns colors into CSS)
+  content/               Songs and prompts
+  lib/data/              Saving and loading (see below)
+tests/e2e/               Browser tests of the main flows (run with `npm test`)
 public/
-  audio/               Placeholder songs
-  icons/               Home-screen icons
-  sw.js                Offline support
-scripts/               One-off helpers that regenerate placeholder audio and icons
+  audio/                 Placeholder songs
+  icons/                 Home-screen icons
+  sw.js                  Offline support
+scripts/                 One-off helpers that regenerate placeholder audio and icons
 ```
+
+## Checking your changes
+
+`npm run build`, then `npm test` opens the built app at phone size and walks through
+the main flows. The same checks run on GitHub for every change (`.github/workflows/checks.yml`).
 
 ## How data is saved
 

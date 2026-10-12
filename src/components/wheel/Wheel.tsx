@@ -5,14 +5,14 @@
  *
  * A circle split into 8 petals, one per dimension (order and colors
  * come from app.config.ts). Each petal fills outward from the center
- * according to its 0 to 10 score. Tap a petal to open that dimension.
+ * according to where she placed it (0 to 10, never shown as a number).
+ * Tap a petal to open that dimension.
  *
  * How the fill works: each colored petal is a full-size wedge that is
  * gently scaled from the center. Score 0 hides it behind the center
  * circle, score 10 reaches the outer edge. Scaling animates smoothly.
  */
-import { dimensions, type DimensionId } from "@/config/app.config";
-import type { WheelScores } from "@/lib/data";
+import { dimensions, wordsFor, type DimensionId } from "@/config/app.config";
 import { Icon } from "../Icon";
 
 const SIZE = 400;
@@ -43,8 +43,11 @@ function scaleFor(score: number) {
   return min + (1 - min) * (score / 10);
 }
 
+/** Where she placed each dimension, 0 to 10. Missing = not yet placed. */
+export type Places = Partial<Record<DimensionId, number>>;
+
 type Props = {
-  scores: WheelScores | undefined;
+  scores: Places | undefined;
   selectedId?: DimensionId | null;
   onSelect?: (id: DimensionId) => void;
   /** Display only (used in onboarding): nothing is tappable. */
@@ -78,7 +81,7 @@ export function Wheel({ scores, selectedId, onSelect, decorative = false }: Prop
               : {
                   role: "button",
                   tabIndex: 0,
-                  "aria-label": `${d.name}, ${scores?.[d.id] ?? "not yet rated"}${scores?.[d.id] !== undefined ? " of 10" : ""}`,
+                  "aria-label": `${d.name}: ${scores?.[d.id] !== undefined ? wordsFor(scores[d.id]!) : "not yet placed"}`,
                   onClick: () => onSelect?.(d.id),
                   onKeyDown: (e: React.KeyboardEvent) => {
                     if (e.key === "Enter" || e.key === " ") {

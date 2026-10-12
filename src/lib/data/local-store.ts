@@ -5,32 +5,26 @@
  * Nothing leaves the phone. Clearing browser data clears this too.
  *
  * When the Supabase backend arrives, a new file (supabase-store.ts)
- * will provide the same functions, and src/lib/data/index.ts will
+ * will provide the same functions, and src/lib/data/store.ts will
  * simply point at that one instead.
  */
-import type {
-  AttentionEntry,
-  DataStore,
-  JournalEntry,
-  MoodEntry,
-  Profile,
-  WheelScores,
-} from "./types";
+import type { Assessment, BecomeChoice, DataStore, JournalEntry, MoodEntry, Profile } from "./types";
 import { SaveError } from "./errors";
 
-/** Every key is prefixed so it never collides with other sites or old versions. */
-const PREFIX = "rhythm:v1:";
+/**
+ * Every key is prefixed so it never collides with other sites or old versions.
+ * v2 = the Radiate build brief's data shapes. Test data saved under the older
+ * "rhythm:v1:" prefix is left untouched and no longer read.
+ */
+const PREFIX = "radiate:v2:";
 const KEYS = {
   profile: PREFIX + "profile",
-  wheel: PREFIX + "wheel",
   moods: PREFIX + "moods",
-  attention: PREFIX + "attention",
+  assessments: PREFIX + "assessments",
   journal: PREFIX + "journal",
+  choices: PREFIX + "become-choices",
   drafts: PREFIX + "drafts",
 };
-
-/** Keep the attention log from growing forever (roughly a year of gentle use). */
-const MAX_ATTENTION_ENTRIES = 2000;
 
 const defaultProfile: Profile = { name: "", onboardedAt: null };
 
@@ -74,6 +68,9 @@ function write(key: string, value: unknown) {
   listeners.forEach((fn) => fn());
 }
 
+const newestFirst = <T extends { createdAt: string }>(items: T[]) =>
+  [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
 // ---- the store ---------------------------------------------------------
 
 export const localStore: DataStore = {
@@ -82,15 +79,6 @@ export const localStore: DataStore = {
   },
   async saveProfile(profile) {
     write(KEYS.profile, profile);
-  },
-
-  async getWheelScores() {
-    return read<WheelScores>(KEYS.wheel, {});
-  },
-  async setWheelScore(dimensionId, score) {
-    const scores = read<WheelScores>(KEYS.wheel, {});
-    scores[dimensionId] = Math.max(0, Math.min(10, Math.round(score)));
-    write(KEYS.wheel, scores);
   },
 
   async getMood(date) {
@@ -103,23 +91,24 @@ export const localStore: DataStore = {
     write(KEYS.moods, moods);
   },
 
-  async logAttention(dimensionId, source) {
-    const log = read<AttentionEntry[]>(KEYS.attention, []);
-    log.push({ dimensionId, source, at: new Date().toISOString() });
-    try {
-      write(KEYS.attention, log.slice(-MAX_ATTENTION_ENTRIES));
-    } catch {
-      // A background note, not something she saved. Never interrupt her for it.
-    }
+  async listAssessments() {
+    return [...read<Assessment[]>(KEYS.assessments, [])].sort((a, b) => b.takenAt.localeCompare(a.takenAt));
   },
-  async getAttention(sinceISO) {
-    return read<AttentionEntry[]>(KEYS.attention, []).filter((e) => e.at >= sinceISO);
+  async addAssessment(assessment) {
+    const saved: Assessment = { ...assessment, id: newId(), takenAt: new Date().toISOString() };
+    write(KEYS.assessments, [...read<Assessment[]>(KEYS.assessments, []), saved]);
+    return saved;
+  },
+  async deleteAssessment(id) {
+    write(
+      KEYS.assessments,
+      read<Assessment[]>(KEYS.assessments, []).filter((a) => a.id !== id),
+    );
   },
 
   async listJournal(dimensionId) {
     const all = read<JournalEntry[]>(KEYS.journal, []);
-    const pages = dimensionId ? all.filter((e) => e.dimensionId === dimensionId) : all;
-    return [...pages].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return newestFirst(dimensionId ? all.filter((e) => e.dimensionIds.includes(dimensionId)) : all);
   },
   async addJournalEntry(entry) {
     const now = new Date().toISOString();
@@ -138,6 +127,30 @@ export const localStore: DataStore = {
     write(
       KEYS.journal,
       read<JournalEntry[]>(KEYS.journal, []).filter((e) => e.id !== id),
+    );
+  },
+
+  async listBecomeChoices(dimensionId) {
+    const all = read<BecomeChoice[]>(KEYS.choices, []);
+    return newestFirst(dimensionId ? all.filter((c) => c.dimensionIds.includes(dimensionId)) : all);
+  },
+  async addBecomeChoice(choice) {
+    const now = new Date().toISOString();
+    const saved: BecomeChoice = { ...choice, id: newId(), createdAt: now, updatedAt: now };
+    write(KEYS.choices, [...read<BecomeChoice[]>(KEYS.choices, []), saved]);
+    return saved;
+  },
+  async updateBecomeChoice(id, text) {
+    const all = read<BecomeChoice[]>(KEYS.choices, []);
+    write(
+      KEYS.choices,
+      all.map((c) => (c.id === id ? { ...c, text, updatedAt: new Date().toISOString() } : c)),
+    );
+  },
+  async deleteBecomeChoice(id) {
+    write(
+      KEYS.choices,
+      read<BecomeChoice[]>(KEYS.choices, []).filter((c) => c.id !== id),
     );
   },
 

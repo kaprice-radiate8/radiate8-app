@@ -3,11 +3,11 @@
 /**
  * TOP OF EVERY SCREEN
  * The micro mark, always centered in the same place (a brand rule),
- * with the settings button on the Today screen.
+ * with her profile button on the Today screen.
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings } from "lucide-react";
+import { CircleUser } from "lucide-react";
 import { MicroMark } from "./MicroMark";
 
 export function SiteHeader() {
@@ -21,11 +21,11 @@ export function SiteHeader() {
       </Link>
       {pathname === "/" && (
         <Link
-          href="/settings"
-          aria-label="Settings"
+          href="/profile"
+          aria-label="Profile"
           className="absolute top-1/2 right-0 -translate-y-1/2 rounded-full p-2 text-plum-soft transition-colors hover:text-plum"
         >
-          <Settings size={20} strokeWidth={1.4} />
+          <CircleUser size={22} strokeWidth={1.4} />
         </Link>
       )}
     </header>

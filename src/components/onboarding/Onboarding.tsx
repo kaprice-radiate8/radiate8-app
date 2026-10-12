@@ -15,11 +15,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { brand } from "@/config/app.config";
-import { store, useStoreData, type WheelScores } from "@/lib/data";
+import { store, useStoreData } from "@/lib/data";
 import { MicroMark } from "../MicroMark";
 import { PaleEight } from "../PaleEight";
 import { SaveNotice } from "../SaveNotice";
-import { Wheel } from "../wheel/Wheel";
+import { Wheel, type Places } from "../wheel/Wheel";
 
 const TOTAL_STEPS = 4;
 
@@ -31,8 +31,8 @@ const method = [
 ];
 
 /** Example fullness for the wheel preview on step 3. Not saved anywhere. */
-const previewScores: WheelScores = {
-  career: 6, health: 7, relationships: 8, joy: 5, growth: 7, stillness: 4, environment: 6, finances: 5,
+const previewScores: Places = {
+  health: 7, relationships: 8, career: 6, finance: 5, environment: 6, growth: 7, joy: 5, spirit: 4,
 };
 
 export function Onboarding() {
@@ -40,16 +40,16 @@ export function Onboarding() {
   const { data: profile } = useStoreData((s) => s.getProfile());
   const [step, setStep] = useState(0);
   const [name, setName] = useState<string | null>(null);
-  const [wheelScores, setWheelScores] = useState<WheelScores>({});
+  const [previewPlaces, setPreviewPlaces] = useState<Places>({});
   const [saveFailed, setSaveFailed] = useState(false);
 
   // On the wheel step, let the petals fill a moment after it appears.
   useEffect(() => {
     if (step !== 2) return;
-    const timer = setTimeout(() => setWheelScores(previewScores), 350);
+    const timer = setTimeout(() => setPreviewPlaces(previewScores), 350);
     return () => {
       clearTimeout(timer);
-      setWheelScores({});
+      setPreviewPlaces({});
     };
   }, [step]);
 
@@ -68,7 +68,9 @@ export function Onboarding() {
       setSaveFailed(true);
       return;
     }
-    router.replace("/");
+    // Her first time: begin with the Radiate 8, as the journey starts with where she is.
+    const assessments = await store.listAssessments();
+    router.replace(assessments.length ? "/" : "/radiate8/assess");
   }
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
@@ -133,7 +135,7 @@ export function Onboarding() {
         {step === 2 && (
           <div className="text-center">
             <div className="mx-auto w-full max-w-[300px]">
-              <Wheel scores={wheelScores} decorative />
+              <Wheel scores={previewPlaces} decorative />
             </div>
             <p className="label mt-6">The Radiate 8</p>
             <h1 className="mt-3 font-serif text-4xl text-plum">Your whole life, in eight dimensions</h1>

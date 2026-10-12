@@ -76,44 +76,53 @@ export const colors = {
 } as const;
 
 // ------------------------------------------------------------
-// 3. THE 8 DIMENSIONS
+// 3. THE RADIATE 8 (names and order from the Radiate build brief)
 // ------------------------------------------------------------
 // The order here is the order around the wheel, starting at the top
-// and moving clockwise. `id` is used in web addresses and saved data,
-// so change names freely but avoid changing an `id` once people use the app.
+// and moving clockwise. `id` is used in web addresses and saved data:
+// rename freely, but never change an `id` once women are using the app.
 export const dimensions = [
   {
-    id: "career",
-    name: "Career",
-    subtitle: "Purpose, work, and the mark you make",
-    /** How this dimension reads inside a sentence, used in journal prompts. */
-    phrase: "your career",
-    icon: "briefcase",
-    accent: "#7B5A78",
-  },
-  {
     id: "health",
-    name: "Health",
-    subtitle: "Body, energy, and how you care for you",
-    phrase: "your health",
+    name: "Health & Body",
+    subtitle: "Energy, rest, movement, and how you care for your body",
+    /** How this dimension reads inside a sentence. */
+    phrase: "your health and body",
     icon: "heart-pulse",
     accent: "#A9B39A",
   },
   {
     id: "relationships",
-    name: "Relationships and Love",
-    subtitle: "The hearts you hold and who holds yours",
+    name: "Relationships & Love",
+    subtitle: "The hearts you hold, and the ones who hold yours",
     phrase: "love and your relationships",
     icon: "heart",
     accent: "#C99199",
   },
   {
-    id: "joy",
-    name: "Joy",
-    subtitle: "Play, delight, and what lights you up",
-    phrase: "joy",
-    icon: "sun",
-    accent: "#D3A45C",
+    id: "career",
+    name: "Career & Purpose",
+    subtitle: "Your work, your calling, and the mark you make",
+    phrase: "your career and purpose",
+    icon: "briefcase",
+    accent: "#7B5A78",
+  },
+  {
+    id: "finance",
+    name: "Finance",
+    subtitle: "Abundance, ease, and a steady foundation",
+    phrase: "your finances",
+    icon: "coins",
+    accent: "#A88B6C",
+  },
+  {
+    // Not nature or sustainability: her home, her spaces, and the people around her.
+    id: "environment",
+    name: "Environment",
+    subtitle: "Your home, your spaces, your community, and the people around you",
+    phrase: "your home and surroundings",
+    icon: "house",
+    accent: "#93AAAA",
   },
   {
     id: "growth",
@@ -124,28 +133,20 @@ export const dimensions = [
     accent: "#8E9C7C",
   },
   {
-    id: "stillness",
-    name: "Stillness and Spirit",
-    subtitle: "Quiet, faith, and your inner knowing",
-    phrase: "stillness and spirit",
-    icon: "moon",
+    id: "joy",
+    name: "Joy",
+    subtitle: "Play, delight, and what lights you up",
+    phrase: "joy",
+    icon: "sun",
+    accent: "#D3A45C",
+  },
+  {
+    id: "spirit",
+    name: "Spirit",
+    subtitle: "Faith, purpose, inner peace, intuition, and meaning",
+    phrase: "your spirit",
+    icon: "flame",
     accent: "#9A86A6",
-  },
-  {
-    id: "environment",
-    name: "Environment",
-    subtitle: "Your home, your spaces, your surroundings",
-    phrase: "your surroundings",
-    icon: "leaf",
-    accent: "#93AAAA",
-  },
-  {
-    id: "finances",
-    name: "Finances",
-    subtitle: "Abundance, ease, and a steady foundation",
-    phrase: "your finances",
-    icon: "coins",
-    accent: "#A88B6C",
   },
 ] as const;
 
@@ -173,15 +174,32 @@ export const moods = [
 export type MoodId = (typeof moods)[number]["id"];
 
 // ------------------------------------------------------------
-// 5. REFLECTION SECTIONS (used in each dimension's journal)
+// 5. REFLECT → BLOOM → BECOME
 // ------------------------------------------------------------
-// The prompts for each section live in src/content/prompts.ts
-export const reflectionSections = [
-  { id: "celebrate", title: "Celebrate What Is" },
-  { id: "see", title: "See Yourself Clearly" },
-  { id: "release", title: "What Gets To Go" },
-  { id: "keep", title: "What Gets To Stay" },
-  { id: "forward", title: "Looking Forward" },
+// The three movements of the Radiate method. Their prompts live in
+// src/content/prompts.ts
+export const movements = [
+  { id: "reflect", title: "Reflect", question: "Where am I now?" },
+  { id: "bloom", title: "Bloom", question: "What do I want?" },
+  { id: "become", title: "Become", question: "What will I choose?" },
 ] as const;
 
-export type ReflectionSectionId = (typeof reflectionSections)[number]["id"];
+export type MovementId = (typeof movements)[number]["id"];
+
+// ------------------------------------------------------------
+// 6. HOW THE RADIATE 8 DESCRIBES WHERE SHE IS
+// ------------------------------------------------------------
+// The assessment is saved on a 0 to 10 scale so changes can be compared
+// over time, but she only ever sees these words, never a number.
+export const placeWords = [
+  { upTo: 2, words: "Asking for tenderness" },
+  { upTo: 4, words: "Quietly waiting" },
+  { upTo: 6, words: "Finding its footing" },
+  { upTo: 8, words: "Growing warm" },
+  { upTo: 10, words: "Radiant" },
+] as const;
+
+/** The gentle words for a place on the scale. */
+export function wordsFor(value: number): string {
+  return (placeWords.find((p) => value <= p.upTo) ?? placeWords[placeWords.length - 1]).words;
+}

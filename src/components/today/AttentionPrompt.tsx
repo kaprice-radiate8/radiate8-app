@@ -2,23 +2,21 @@
 
 /**
  * "What needs your attention today?"
- * Opens softly to show the 8 dimensions. Choosing one records a moment
- * of attention (for My Rhythm) and takes you to that dimension.
+ * Opens softly to show the 8 dimensions. Choosing one begins
+ * Reflect → Bloom → Become for that dimension.
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { dimensions } from "@/config/app.config";
-import { store } from "@/lib/data";
 import { Icon } from "../Icon";
 
 export function AttentionPrompt() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  async function choose(id: (typeof dimensions)[number]["id"]) {
-    await store.logAttention(id, "today");
-    router.push(`/dimension/${id}`);
+  function choose(id: (typeof dimensions)[number]["id"]) {
+    router.push(`/radiate8/explore?d=${id}`);
   }
 
   return (

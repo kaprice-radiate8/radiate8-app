@@ -38,7 +38,7 @@ export function Greeting() {
         </h1>
         <p className="mt-3 font-script text-4xl text-plum">{triad}</p>
         {ready && !profile?.name && (
-          <Link href="/settings" className="mt-2 inline-block text-sm text-plum-soft underline decoration-line underline-offset-4">
+          <Link href="/profile" className="mt-2 inline-block text-sm text-plum-soft underline decoration-line underline-offset-4">
             Tell us what to call you
           </Link>
         )}

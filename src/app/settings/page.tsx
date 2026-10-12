@@ -1,8 +1,0 @@
-/** SETTINGS (web address: /settings) */
-import { SettingsScreen } from "@/components/settings/SettingsScreen";
-
-export const metadata = { title: "Settings" };
-
-export default function SettingsPage() {
-  return <SettingsScreen />;
-}

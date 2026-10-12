@@ -2,18 +2,19 @@
 
 /**
  * BOTTOM NAVIGATION
- * The soft tab bar at the bottom of every screen.
+ * Four tabs, following the Radiate build brief: Today, Radiate 8,
+ * Moments and Stories. Her profile lives behind the icon at the top of Today.
+ * Music has no tab of its own: it lives in Today's Dedication and her stories.
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Camera, ChartPie, Music, Sun, Waves } from "lucide-react";
+import { BookOpen, Camera, ChartPie, Sun } from "lucide-react";
 
 const tabs = [
-  { href: "/", label: "Today", icon: <Sun size={20} strokeWidth={1.4} /> },
-  { href: "/wheel", label: "Wheel", icon: <ChartPie size={20} strokeWidth={1.4} /> },
-  { href: "/rhythm", label: "Rhythm", icon: <Waves size={20} strokeWidth={1.4} /> },
-  { href: "/moments", label: "Moments", icon: <Camera size={20} strokeWidth={1.4} /> },
-  { href: "/music", label: "Music", icon: <Music size={20} strokeWidth={1.4} /> },
+  { href: "/", label: "Today", icon: <Sun size={20} strokeWidth={1.4} />, also: [] as string[] },
+  { href: "/radiate8", label: "Radiate 8", icon: <ChartPie size={20} strokeWidth={1.4} />, also: ["/dimension"] },
+  { href: "/moments", label: "Moments", icon: <Camera size={20} strokeWidth={1.4} />, also: [] },
+  { href: "/stories", label: "Stories", icon: <BookOpen size={20} strokeWidth={1.4} />, also: [] },
 ];
 
 export function BottomNav() {
@@ -28,7 +29,10 @@ export function BottomNav() {
     >
       <ul className="flex w-full max-w-md items-center justify-between rounded-full bg-linen/90 px-3 py-2 shadow-[0_12px_30px_-18px_rgb(75_48_74/0.45)] backdrop-blur">
         {tabs.map((tab) => {
-          const active = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href) || (tab.href === "/wheel" && pathname.startsWith("/dimension"));
+          const active =
+            tab.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(tab.href) || tab.also.some((p) => pathname.startsWith(p));
           return (
             <li key={tab.href} className="flex-1">
               <Link

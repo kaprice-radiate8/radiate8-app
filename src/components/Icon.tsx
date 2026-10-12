@@ -8,6 +8,7 @@
 import {
   Briefcase,
   Coins,
+  Flame,
   Flower2,
   Heart,
   HeartPulse,
@@ -24,6 +25,7 @@ import {
 const icons = {
   briefcase: Briefcase,
   coins: Coins,
+  flame: Flame,
   flower: Flower2,
   heart: Heart,
   "heart-pulse": HeartPulse,

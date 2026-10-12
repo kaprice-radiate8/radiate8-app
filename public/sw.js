@@ -9,25 +9,27 @@
  *
  * After changing which screens exist, bump VERSION so phones refresh their copy.
  */
-const VERSION = "rhythm-v4";
+const VERSION = "radiate-v5";
 
 const CORE = [
   "/",
-  "/wheel",
-  "/rhythm",
+  "/radiate8",
+  "/radiate8/assess",
+  "/radiate8/compare",
+  "/radiate8/explore",
   "/moments",
-  "/music",
-  "/settings",
+  "/stories",
+  "/profile",
   "/welcome",
   // One page per dimension. Keep in sync with dimensions in app.config.ts.
-  "/dimension/career",
   "/dimension/health",
   "/dimension/relationships",
-  "/dimension/joy",
-  "/dimension/growth",
-  "/dimension/stillness",
+  "/dimension/career",
+  "/dimension/finance",
   "/dimension/environment",
-  "/dimension/finances",
+  "/dimension/growth",
+  "/dimension/joy",
+  "/dimension/spirit",
   "/manifest.webmanifest",
   "/icons/icon-192.png",
   "/icons/icon-512.png",

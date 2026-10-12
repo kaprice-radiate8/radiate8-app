@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * SETTINGS
- * For now: change the name the app greets you by.
+ * PROFILE
+ * Change the name the app greets you by, and replay the welcome.
+ * Her history (assessments, Become choices, stories) joins this screen later.
  */
 import { useState } from "react";
 import Link from "next/link";
@@ -11,7 +12,7 @@ import { brand } from "@/config/app.config";
 import { store, useStoreData } from "@/lib/data";
 import { SaveNotice } from "../SaveNotice";
 
-export function SettingsScreen() {
+export function ProfileScreen() {
   const { data: profile, ready } = useStoreData((s) => s.getProfile());
   // `draft` is what's typed; until they type, show the saved name.
   const [draft, setDraft] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export function SettingsScreen() {
       <Link href="/" className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-plum-soft">
         <ChevronLeft size={18} strokeWidth={1.4} /> Today
       </Link>
-      <h1 className="mt-4 font-serif text-4xl text-plum">Settings</h1>
+      <h1 className="mt-4 font-serif text-4xl text-plum">Profile</h1>
 
       <form onSubmit={save} className="card mt-6 p-5">
         <label htmlFor="name" className="label">

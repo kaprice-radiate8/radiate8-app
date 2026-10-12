@@ -5,7 +5,7 @@
  * They stay the same whether data lives in the browser (today)
  * or in Supabase (later).
  */
-import type { DimensionId, MoodId, ReflectionSectionId } from "@/config/app.config";
+import type { DimensionId, MoodId, MovementId } from "@/config/app.config";
 
 /** The person using the app. */
 export type Profile = {
@@ -13,9 +13,6 @@ export type Profile = {
   /** Set once onboarding is finished. */
   onboardedAt: string | null;
 };
-
-/** Wheel scores, 0 to 10, one per dimension. Missing means "not yet rated". */
-export type WheelScores = Partial<Record<DimensionId, number>>;
 
 /** One daily "How are you arriving today?" answer. */
 export type MoodEntry = {
@@ -25,31 +22,50 @@ export type MoodEntry = {
   at: string;
 };
 
-/** Where a moment of attention came from. Powers the "My Rhythm" view. */
-export type AttentionSource = "today" | "wheel" | "reflection" | "moment";
-
-/** A small record each time a dimension receives some attention. */
-export type AttentionEntry = {
-  dimensionId: DimensionId;
-  source: AttentionSource;
-  at: string;
+/**
+ * One Radiate 8 assessment, saved with its date so it can be compared later.
+ * Places are 0 to 10 behind the scenes; she only ever sees words.
+ */
+export type Assessment = {
+  id: string;
+  takenAt: string;
+  places: Record<DimensionId, number>;
+  /** A few words she added for a dimension, if any. */
+  notes: Partial<Record<DimensionId, string>>;
+  /** Her answer to "What do you notice?" */
+  noticing: string;
 };
 
-/** One journal page: a written reflection on one dimension. */
+export type NewAssessment = Omit<Assessment, "id" | "takenAt">;
+
+/** One page of writing in Reflect, Bloom or Become. */
 export type JournalEntry = {
   id: string;
-  dimensionId: DimensionId;
-  /** Which reflection section it was written in ("celebrate", "release", ...) */
-  sectionId: ReflectionSectionId;
-  /** The prompt that was showing, kept so the page reads well later */
+  /** The dimensions she was exploring (one or more). */
+  dimensionIds: DimensionId[];
+  movement: MovementId;
+  /** The question that was showing, kept so the page reads well later */
   prompt: string;
   text: string;
   createdAt: string;
   updatedAt: string;
 };
 
-/** What is needed to write a new page (the store fills in id and dates). */
-export type NewJournalEntry = Pick<JournalEntry, "dimensionId" | "sectionId" | "prompt" | "text">;
+export type NewJournalEntry = Pick<JournalEntry, "dimensionIds" | "movement" | "prompt" | "text">;
+
+/**
+ * Something she chose to live, from the Become movement.
+ * Shown back to her gently: no deadlines, no checkmarks, no reminders.
+ */
+export type BecomeChoice = {
+  id: string;
+  dimensionIds: DimensionId[];
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NewBecomeChoice = Pick<BecomeChoice, "dimensionIds" | "text">;
 
 /**
  * THE CONTRACT
@@ -58,26 +74,30 @@ export type NewJournalEntry = Pick<JournalEntry, "dimensionId" | "sectionId" | "
  *
  * Saving functions must reject with a SaveError (see errors.ts) when the data
  * was not saved, so screens never say "Saved" when it wasn't.
- * The one exception is logAttention, a background note that never rejects.
  */
 export interface DataStore {
   getProfile(): Promise<Profile>;
   saveProfile(profile: Profile): Promise<void>;
 
-  getWheelScores(): Promise<WheelScores>;
-  setWheelScore(dimensionId: DimensionId, score: number): Promise<void>;
-
   getMood(date: string): Promise<MoodEntry | null>;
   setMood(date: string, moodId: MoodEntry["moodId"]): Promise<void>;
 
-  logAttention(dimensionId: DimensionId, source: AttentionSource): Promise<void>;
-  getAttention(sinceISO: string): Promise<AttentionEntry[]>;
+  /** Assessments, newest first. */
+  listAssessments(): Promise<Assessment[]>;
+  addAssessment(assessment: NewAssessment): Promise<Assessment>;
+  deleteAssessment(id: string): Promise<void>;
 
-  /** Journal pages, newest first. Pass a dimension to see only its pages. */
+  /** Journal pages, newest first. Pass a dimension to see only pages that include it. */
   listJournal(dimensionId?: DimensionId): Promise<JournalEntry[]>;
   addJournalEntry(entry: NewJournalEntry): Promise<JournalEntry>;
   updateJournalEntry(id: string, text: string): Promise<void>;
   deleteJournalEntry(id: string): Promise<void>;
+
+  /** Become choices, newest first. Pass a dimension to see only choices that include it. */
+  listBecomeChoices(dimensionId?: DimensionId): Promise<BecomeChoice[]>;
+  addBecomeChoice(choice: NewBecomeChoice): Promise<BecomeChoice>;
+  updateBecomeChoice(id: string, text: string): Promise<void>;
+  deleteBecomeChoice(id: string): Promise<void>;
 
   /** Unfinished writing, kept safe while typing. `key` identifies the page being written. */
   getDraft(key: string): Promise<string>;
