@@ -4,7 +4,8 @@
  * BOTTOM NAVIGATION
  * Four tabs, following the Radiate build brief: Today, Radiate 8,
  * Moments and Stories. Her profile lives behind the icon at the top of Today.
- * Music has no tab of its own: it lives in Today's Dedication and her stories.
+ * Daily Activities and Dedications are reached from Today. Music lives inside
+ * the Daily Activities, not in a tab of its own.
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";

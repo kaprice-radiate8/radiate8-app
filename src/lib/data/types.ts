@@ -75,6 +75,29 @@ export type NewBecomeChoice = Pick<BecomeChoice, "dimensionIds" | "text">;
  * Saving functions must reject with a SaveError (see errors.ts) when the data
  * was not saved, so screens never say "Saved" when it wasn't.
  */
+/**
+ * A Daily Activity she finished, and, if she chose to say, how she feels now.
+ * Kept for her own history and future Progress Stories. Never used for streaks.
+ */
+export type ActivityLog = {
+  id: string;
+  activityId: string;
+  felt: string | null;
+  at: string;
+};
+
+export type NewActivityLog = Pick<ActivityLog, "activityId" | "felt">;
+
+/** What she chose to write during a Dedication (always optional). */
+export type DedicationNote = {
+  id: string;
+  dedicationId: string;
+  text: string;
+  createdAt: string;
+};
+
+export type NewDedicationNote = Pick<DedicationNote, "dedicationId" | "text">;
+
 export interface DataStore {
   getProfile(): Promise<Profile>;
   saveProfile(profile: Profile): Promise<void>;
@@ -100,6 +123,12 @@ export interface DataStore {
   deleteBecomeChoice(id: string): Promise<void>;
 
   /** Unfinished writing, kept safe while typing. `key` identifies the page being written. */
+  listActivityLog(): Promise<ActivityLog[]>;
+  logActivity(log: NewActivityLog): Promise<ActivityLog>;
+
+  listDedicationNotes(dedicationId?: string): Promise<DedicationNote[]>;
+  addDedicationNote(note: NewDedicationNote): Promise<DedicationNote>;
+
   getDraft(key: string): Promise<string>;
   setDraft(key: string, text: string): Promise<void>;
 

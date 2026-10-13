@@ -187,6 +187,33 @@ export const movements = [
 export type MovementId = (typeof movements)[number]["id"];
 
 // ------------------------------------------------------------
+// 5b. DAILY ACTIVITY: "How do you want to feel?"
+// ------------------------------------------------------------
+// The two paths into a Daily Activity. The labels are WORKING NAMES,
+// not approved branding: change `label` and `line` here freely.
+// The `id` is saved with each activity, so keep it as it is.
+export const feelingPaths = [
+  {
+    id: "energize",
+    label: "Rev Up",
+    line: "Wake up, move, and feel bright and confident",
+    icon: "sun",
+  },
+  {
+    id: "settle",
+    label: "Calm / Reset",
+    line: "Slow down, breathe, and feel steady again",
+    icon: "waves",
+  },
+] as const;
+
+export type FeelingPathId = (typeof feelingPaths)[number]["id"];
+
+export function getFeelingPath(id: string) {
+  return feelingPaths.find((p) => p.id === id);
+}
+
+// ------------------------------------------------------------
 // 6. HOW THE RADIATE 8 DESCRIBES WHERE SHE IS
 // ------------------------------------------------------------
 // The assessment is saved on a 0 to 10 scale so changes can be compared

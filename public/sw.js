@@ -2,14 +2,14 @@
  * SERVICE WORKER: makes the app open and work with no internet.
  *
  * How it works, in plain words:
- *  - On first visit, it saves the main screens, icons, and songs on the device.
- *  - App code and songs: served from the saved copy first (fast, offline).
+ *  - On first visit, it saves the main screens and icons on the device.
+ *  - App code and icons: served from the saved copy first (fast, offline).
  *  - Pages: tries the internet first for the freshest version, and falls
  *    back to the saved copy when offline.
  *
  * After changing which screens exist, bump VERSION so phones refresh their copy.
  */
-const VERSION = "radiate-v5";
+const VERSION = "radiate-v6";
 
 const CORE = [
   "/",
@@ -17,6 +17,9 @@ const CORE = [
   "/radiate8/assess",
   "/radiate8/compare",
   "/radiate8/explore",
+  // Each activity and Dedication is saved the first time she opens it.
+  "/activity",
+  "/dedications",
   "/moments",
   "/stories",
   "/profile",
@@ -33,9 +36,6 @@ const CORE = [
   "/manifest.webmanifest",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
-  "/audio/golden-hour.wav",
-  "/audio/morning-tide.wav",
-  "/audio/still-water.wav",
 ];
 
 self.addEventListener("install", (event) => {
@@ -60,7 +60,6 @@ self.addEventListener("activate", (event) => {
 
 const isStaticAsset = (url) =>
   url.pathname.startsWith("/_next/static/") ||
-  url.pathname.startsWith("/audio/") ||
   url.pathname.startsWith("/icons/");
 
 self.addEventListener("fetch", (event) => {

@@ -8,7 +8,7 @@
  * will provide the same functions, and src/lib/data/store.ts will
  * simply point at that one instead.
  */
-import type { Assessment, BecomeChoice, DataStore, JournalEntry, MoodEntry, Profile } from "./types";
+import type { ActivityLog, Assessment, BecomeChoice, DataStore, DedicationNote, JournalEntry, MoodEntry, Profile } from "./types";
 import { SaveError } from "./errors";
 
 /**
@@ -23,6 +23,8 @@ const KEYS = {
   assessments: PREFIX + "assessments",
   journal: PREFIX + "journal",
   choices: PREFIX + "become-choices",
+  activityLog: PREFIX + "activity-log",
+  dedicationNotes: PREFIX + "dedication-notes",
   drafts: PREFIX + "drafts",
 };
 
@@ -152,6 +154,25 @@ export const localStore: DataStore = {
       KEYS.choices,
       read<BecomeChoice[]>(KEYS.choices, []).filter((c) => c.id !== id),
     );
+  },
+
+  async listActivityLog() {
+    return [...read<ActivityLog[]>(KEYS.activityLog, [])].sort((a, b) => b.at.localeCompare(a.at));
+  },
+  async logActivity(log) {
+    const saved: ActivityLog = { ...log, id: newId(), at: new Date().toISOString() };
+    write(KEYS.activityLog, [...read<ActivityLog[]>(KEYS.activityLog, []), saved]);
+    return saved;
+  },
+
+  async listDedicationNotes(dedicationId) {
+    const all = read<DedicationNote[]>(KEYS.dedicationNotes, []);
+    return newestFirst(dedicationId ? all.filter((n) => n.dedicationId === dedicationId) : all);
+  },
+  async addDedicationNote(note) {
+    const saved: DedicationNote = { ...note, id: newId(), createdAt: new Date().toISOString() };
+    write(KEYS.dedicationNotes, [...read<DedicationNote[]>(KEYS.dedicationNotes, []), saved]);
+    return saved;
   },
 
   async getDraft(key) {
