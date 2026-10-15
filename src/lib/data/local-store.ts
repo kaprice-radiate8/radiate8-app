@@ -8,7 +8,7 @@
  * will provide the same functions, and src/lib/data/store.ts will
  * simply point at that one instead.
  */
-import type { ActivityLog, Assessment, BecomeChoice, DataStore, DedicationNote, JournalEntry, MoodEntry, Profile } from "./types";
+import type { ActivityLog, Assessment, BecomeChoice, BloomSeen, DataStore, DedicationNote, JournalEntry, MoodEntry, Profile } from "./types";
 import { SaveError } from "./errors";
 
 /**
@@ -25,6 +25,7 @@ const KEYS = {
   choices: PREFIX + "become-choices",
   activityLog: PREFIX + "activity-log",
   dedicationNotes: PREFIX + "dedication-notes",
+  bloomSeen: PREFIX + "bloom-seen",
   drafts: PREFIX + "drafts",
 };
 
@@ -154,6 +155,23 @@ export const localStore: DataStore = {
       KEYS.choices,
       read<BecomeChoice[]>(KEYS.choices, []).filter((c) => c.id !== id),
     );
+  },
+
+  async setBecomeChoiceLived(id, lived) {
+    const all = read<BecomeChoice[]>(KEYS.choices, []);
+    const now = new Date().toISOString();
+    write(
+      KEYS.choices,
+      all.map((c) => (c.id === id ? { ...c, livedAt: lived ? now : null, updatedAt: now } : c)),
+    );
+  },
+
+  async getBloomSeen() {
+    return { petals: 0, bouquets: 0, ...read<Partial<BloomSeen>>(KEYS.bloomSeen, {}) };
+  },
+  async setBloomSeen(seen) {
+    // Quietly: this only remembers what she has seen, so no screen needs to refresh.
+    writeQuietly(KEYS.bloomSeen, seen);
   },
 
   async listActivityLog() {

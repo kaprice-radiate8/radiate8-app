@@ -214,6 +214,26 @@ export function getFeelingPath(id: string) {
 }
 
 // ------------------------------------------------------------
+// 5c. HER BLOOM: petals, flowers and 90-day bouquets
+// ------------------------------------------------------------
+// Each thing she does that grows a petal adds one to her current flower.
+// When a flower has all its petals, it's finished and a new one begins.
+// At the end of each season, every flower is gathered into a bouquet.
+// Petals are never lost: nothing wilts, shrinks or resets.
+export const bloom = {
+  petalsPerFlower: 8,
+  seasonDays: 90,
+  /** What grows a petal. Daily Activities are off for now; set to true to count them. */
+  grows: {
+    reflections: true, // Reflect, Bloom or Become writing
+    assessments: true, // a Radiate 8
+    dedicationNotes: true, // writing in a Dedication
+    livedChoices: true, // a Become choice marked as lived: a gold-edged petal
+    dailyActivities: false,
+  },
+} as const;
+
+// ------------------------------------------------------------
 // 6. HOW THE RADIATE 8 DESCRIBES WHERE SHE IS
 // ------------------------------------------------------------
 // The assessment is saved on a 0 to 10 scale so changes can be compared

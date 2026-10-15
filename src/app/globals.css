@@ -127,3 +127,14 @@ input[type="range"]::-moz-range-thumb {
   background-attachment: local;
   line-height: 2rem;
 }
+
+/* A new petal opening on her flower. */
+.petal-grow {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: petal-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@keyframes petal-grow {
+  from { transform: scale(0.1); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

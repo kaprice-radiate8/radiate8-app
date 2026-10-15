@@ -9,7 +9,7 @@
  *
  * After changing which screens exist, bump VERSION so phones refresh their copy.
  */
-const VERSION = "radiate-v6";
+const VERSION = "radiate-v7";
 
 const CORE = [
   "/",
@@ -20,6 +20,7 @@ const CORE = [
   // Each activity and Dedication is saved the first time she opens it.
   "/activity",
   "/dedications",
+  "/bloom",
   "/moments",
   "/stories",
   "/profile",

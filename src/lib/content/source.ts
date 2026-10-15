@@ -9,7 +9,7 @@
  */
 import { activities } from "@/content/activities";
 import { dedications } from "@/content/dedications";
-import type { FeelingPathId } from "@/config/app.config";
+import type { DimensionId, FeelingPathId } from "@/config/app.config";
 import type { DailyActivity, Dedication } from "./types";
 
 export interface ContentSource {
@@ -40,3 +40,9 @@ const localContent: ContentSource = {
 };
 
 export const content: ContentSource = localContent;
+
+/** The first dimension tag of every live activity and Dedication, by id (for petal colors). */
+export async function dimensionIndex(): Promise<Record<string, DimensionId | undefined>> {
+  const [acts, deds] = await Promise.all([content.listActivities(), content.listDedications()]);
+  return Object.fromEntries([...acts, ...deds].map((x) => [x.id, x.dimensionTags[0]]));
+}

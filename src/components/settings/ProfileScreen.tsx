@@ -67,6 +67,11 @@ export function ProfileScreen() {
         <SaveNotice className="mt-4" message={saveFailed ? "Your name didn't save. Please try again in a moment." : null} />
       </form>
 
+      <Link href="/bloom" className="card mt-4 flex items-center justify-between p-5 text-plum">
+        <span className="font-serif text-xl">Your bloom and bouquets</span>
+        <span className="label">View</span>
+      </Link>
+
       <Link href="/welcome" className="card mt-4 flex items-center justify-between p-5 text-plum">
         <span className="font-serif text-xl">Replay the welcome</span>
         <span className="label">View</span>

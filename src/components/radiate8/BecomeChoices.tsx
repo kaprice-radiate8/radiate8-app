@@ -4,6 +4,7 @@
  * BECOME CHOICES
  * What she chose to live, shown back to her gently.
  * No deadlines, no checkmarks, no reminders: just her own words, kept.
+ * When she has lived one, she can say so, and it opens a gold-edged petal.
  */
 import { useState } from "react";
 import { getDimension, type DimensionId } from "@/config/app.config";
@@ -52,6 +53,15 @@ function Choice({ choice }: { choice: BecomeChoice }) {
     setEditing(null);
   }
 
+  async function setLived(lived: boolean) {
+    try {
+      await store.setBecomeChoiceLived(choice.id, lived);
+      setProblem(null);
+    } catch {
+      setProblem("That didn't save. Please try again in a moment.");
+    }
+  }
+
   async function letGo() {
     try {
       await store.deleteBecomeChoice(choice.id);
@@ -64,7 +74,14 @@ function Choice({ choice }: { choice: BecomeChoice }) {
   return (
     <li className="card overflow-hidden">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="block w-full p-5 text-left">
-        <p className="text-xs text-plum-soft">Chosen {dayLabel(choice.createdAt).toLowerCase() === "today" ? "today" : `on ${dayLabel(choice.createdAt)}`}</p>
+        <p className="flex flex-wrap items-center gap-x-2 text-xs text-plum-soft">
+          <span>Chosen {dayLabel(choice.createdAt).toLowerCase() === "today" ? "today" : `on ${dayLabel(choice.createdAt)}`}</span>
+          {choice.livedAt && (
+            <span className="rounded-full border border-gold px-2 py-0.5 text-plum">
+              Lived {dayLabel(choice.livedAt).toLowerCase() === "today" ? "today" : `on ${dayLabel(choice.livedAt)}`}
+            </span>
+          )}
+        </p>
         {editing === null && <p className="mt-2 font-serif text-2xl leading-snug text-plum">{choice.text}</p>}
         <p className="mt-3 flex flex-wrap gap-1.5">
           {choice.dimensionIds.map((id) => {
@@ -112,6 +129,15 @@ function Choice({ choice }: { choice: BecomeChoice }) {
             </>
           ) : (
             <>
+              {choice.livedAt ? (
+                <button type="button" onClick={() => setLived(false)} className="mr-auto rounded-full px-3 py-1.5 text-sm text-plum-soft">
+                  Not lived yet
+                </button>
+              ) : (
+                <button type="button" onClick={() => setLived(true)} className="mr-auto rounded-full border border-gold px-4 py-1.5 text-sm text-plum">
+                  I lived this
+                </button>
+              )}
               <button type="button" onClick={() => setEditing(choice.text)} className="rounded-full px-3 py-1.5 text-sm text-plum">
                 Edit
               </button>

@@ -63,6 +63,8 @@ export type BecomeChoice = {
   text: string;
   createdAt: string;
   updatedAt: string;
+  /** When she marked it as lived (a goal reached). Grows a gold-edged petal. */
+  livedAt?: string | null;
 };
 
 export type NewBecomeChoice = Pick<BecomeChoice, "dimensionIds" | "text">;
@@ -98,6 +100,13 @@ export type DedicationNote = {
 
 export type NewDedicationNote = Pick<DedicationNote, "dedicationId" | "text">;
 
+/** What her bloom looked like the last time she saw it, so new petals can grow in. */
+export type BloomSeen = {
+  petals: number;
+  /** How many finished 90-day bouquets she has already been shown. */
+  bouquets: number;
+};
+
 export interface DataStore {
   getProfile(): Promise<Profile>;
   saveProfile(profile: Profile): Promise<void>;
@@ -121,6 +130,8 @@ export interface DataStore {
   addBecomeChoice(choice: NewBecomeChoice): Promise<BecomeChoice>;
   updateBecomeChoice(id: string, text: string): Promise<void>;
   deleteBecomeChoice(id: string): Promise<void>;
+  /** Mark a Become choice as lived (or not yet). */
+  setBecomeChoiceLived(id: string, lived: boolean): Promise<void>;
 
   /** Unfinished writing, kept safe while typing. `key` identifies the page being written. */
   listActivityLog(): Promise<ActivityLog[]>;
@@ -128,6 +139,9 @@ export interface DataStore {
 
   listDedicationNotes(dedicationId?: string): Promise<DedicationNote[]>;
   addDedicationNote(note: NewDedicationNote): Promise<DedicationNote>;
+
+  getBloomSeen(): Promise<BloomSeen>;
+  setBloomSeen(seen: BloomSeen): Promise<void>;
 
   getDraft(key: string): Promise<string>;
   setDraft(key: string, text: string): Promise<void>;
