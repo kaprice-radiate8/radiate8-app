@@ -101,6 +101,7 @@ function JournalPage({ page }: { page: JournalEntry }) {
           <AutoGrowTextarea
             value={editing}
             onChange={(e) => setEditing(e.target.value)}
+            onDictate={setEditing}
             minRows={4}
             autoFocus
             aria-label="Edit this page"

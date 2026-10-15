@@ -131,6 +131,7 @@ export function AssessmentFlow() {
             aria-label="What do you notice?"
             value={noticing}
             onChange={(e) => setNoticing(e.target.value)}
+            onDictate={setNoticing}
             placeholder="I notice..."
             minRows={5}
             className="px-5 pt-3 pb-6 pl-10 font-serif text-xl leading-8 text-plum outline-none placeholder:text-plum-soft/40"

@@ -226,6 +226,7 @@ function Movement({
             aria-label={prompt}
             value={text}
             onChange={(e) => onWrite(e.target.value)}
+            onDictate={onWrite}
             placeholder="Today, I am noticing..."
             minRows={6}
             className="px-5 pt-3 pb-6 pl-10 font-serif text-xl leading-8 text-plum outline-none placeholder:text-plum-soft/40"

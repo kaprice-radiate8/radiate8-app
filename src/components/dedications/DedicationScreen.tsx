@@ -132,6 +132,7 @@ function Writing({ dedication }: { dedication: Dedication }) {
               aria-label={dedication.journalPrompt}
               value={text}
               onChange={(e) => setText(e.target.value)}
+              onDictate={setText}
               minRows={5}
               autoFocus
               className="px-5 pt-3 pb-6 pl-10 font-serif text-xl leading-8 text-plum outline-none"
