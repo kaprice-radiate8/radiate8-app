@@ -9,7 +9,7 @@
  *
  * After changing which screens exist, bump VERSION so phones refresh their copy.
  */
-const VERSION = "radiate-v7";
+const VERSION = "radiate-v8";
 
 const CORE = [
   "/",
@@ -21,6 +21,9 @@ const CORE = [
   "/activity",
   "/dedications",
   "/bloom",
+  "/intentions",
+  "/intentions/new",
+  "/intentions/view",
   "/moments",
   "/stories",
   "/profile",

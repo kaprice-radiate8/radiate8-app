@@ -107,6 +107,76 @@ export type BloomSeen = {
   bouquets: number;
 };
 
+// ---- 90-day intentions, milestones, weekly and daily actions ----
+//
+// Become choices are her words; an intention is a choice she has decided to
+// shape into 90 days. Everything here counts what she lived, never what she
+// missed: nothing is overdue, nothing turns red, nothing resets.
+
+/**
+ * growing: she's living it now. resting: set down for a while, by her choice.
+ * reached: she says she arrived. (Letting an intention go deletes it.)
+ */
+export type IntentionStatus = "growing" | "resting" | "reached";
+
+/** A 90-day intention (the brief's "90-day goal"). */
+export type Intention = {
+  id: string;
+  title: string;
+  /** Why it matters to her: the vision behind it, in her words. May be empty. */
+  vision: string;
+  dimensionIds: DimensionId[];
+  /** The Become choice it grew from, if any. */
+  becomeChoiceId: string | null;
+  /** Calendar days, like "2026-10-15". Her season is 90 days from `startsOn`. */
+  startsOn: string;
+  endsOn: string;
+  status: IntentionStatus;
+  reachedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NewIntention = Pick<Intention, "title" | "vision" | "dimensionIds" | "becomeChoiceId">;
+export type IntentionChanges = Partial<Pick<Intention, "title" | "vision" | "dimensionIds" | "status">>;
+
+/** A sign she's on her way. Reaching one opens a gold-edged petal. */
+export type Milestone = {
+  id: string;
+  intentionId: string;
+  title: string;
+  reachedAt: string | null;
+  createdAt: string;
+};
+
+/** A small thing she'd like to do in a given week, toward an intention. */
+export type WeeklyAction = {
+  id: string;
+  intentionId: string;
+  title: string;
+  /** The Monday that starts its week, like "2026-10-12". */
+  weekOf: string;
+  livedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NewWeeklyAction = Pick<WeeklyAction, "intentionId" | "title" | "weekOf">;
+
+/** Today's one meaningful action: one of her weekly actions, or her own words. */
+export type DailyAction = {
+  /** Calendar day, like "2026-10-15" (one per day). */
+  date: string;
+  text: string;
+  /** Set when she chose one of her weekly actions. */
+  weeklyActionId: string | null;
+  intentionId: string | null;
+  livedAt: string | null;
+  at: string;
+};
+
+export type NewDailyAction = Pick<DailyAction, "text" | "weeklyActionId" | "intentionId">;
+
 export interface DataStore {
   getProfile(): Promise<Profile>;
   saveProfile(profile: Profile): Promise<void>;
@@ -139,6 +209,39 @@ export interface DataStore {
 
   listDedicationNotes(dedicationId?: string): Promise<DedicationNote[]>;
   addDedicationNote(note: NewDedicationNote): Promise<DedicationNote>;
+
+  /** Her intentions, newest first. */
+  listIntentions(): Promise<Intention[]>;
+  /** Plant an intention with its first milestones and this week's first actions, all at once. */
+  addIntention(intention: NewIntention, milestones: string[], firstActions: { title: string; weekOf: string }[]): Promise<Intention>;
+  updateIntention(id: string, changes: IntentionChanges): Promise<void>;
+  /** Begin a fresh 90 days for the same intention, from `startsOn`. */
+  renewIntention(id: string, startsOn: string): Promise<void>;
+  /** Let it go: removes the intention, its milestones and its weekly actions. */
+  deleteIntention(id: string): Promise<void>;
+
+  /** Milestones, in the order she added them. */
+  listMilestones(intentionId?: string): Promise<Milestone[]>;
+  addMilestone(intentionId: string, title: string): Promise<Milestone>;
+  setMilestoneReached(id: string, reached: boolean): Promise<void>;
+  deleteMilestone(id: string): Promise<void>;
+
+  /** Weekly actions, oldest first. */
+  listWeeklyActions(intentionId?: string): Promise<WeeklyAction[]>;
+  addWeeklyAction(action: NewWeeklyAction): Promise<WeeklyAction>;
+  /** Mark lived (or not yet). Also updates today's one action if it is this one. */
+  setWeeklyActionLived(id: string, lived: boolean): Promise<void>;
+  /** Bring an action into another week (used to carry one forward). */
+  moveWeeklyAction(id: string, weekOf: string): Promise<void>;
+  deleteWeeklyAction(id: string): Promise<void>;
+
+  /** All of her daily actions, newest first. */
+  listDailyActions(): Promise<DailyAction[]>;
+  getDailyAction(date: string): Promise<DailyAction | null>;
+  setDailyAction(date: string, action: NewDailyAction): Promise<DailyAction>;
+  /** Mark today's action lived (or not yet). If it's a weekly action, that one is marked too. */
+  setDailyActionLived(date: string, lived: boolean): Promise<void>;
+  clearDailyAction(date: string): Promise<void>;
 
   getBloomSeen(): Promise<BloomSeen>;
   setBloomSeen(seen: BloomSeen): Promise<void>;

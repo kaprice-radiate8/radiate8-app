@@ -229,8 +229,26 @@ export const bloom = {
     assessments: true, // a Radiate 8
     dedicationNotes: true, // writing in a Dedication
     livedChoices: true, // a Become choice marked as lived: a gold-edged petal
+    livedActions: true, // a weekly action, or today's one meaningful action, lived
+    milestones: true, // a milestone or a whole 90-day intention reached: a gold-edged petal
     dailyActivities: false,
   },
+} as const;
+
+// ------------------------------------------------------------
+// 5d. 90-DAY INTENTIONS (the goal planner)
+// ------------------------------------------------------------
+// When a Become choice is ready to be lived, she can shape it into a
+// 90-day intention, with a few milestones and small weekly actions.
+// Today then offers "one meaningful action". These are suggestions for the
+// screens, never limits: she can always add more.
+export const intentions = {
+  days: 90,
+  /** The planner gently mentions this many as a comfortable number to hold at once. */
+  comfortableIntentions: 3,
+  /** How many milestones and first actions the planting flow asks for. */
+  milestonesAtPlanting: 3,
+  actionsAtPlanting: 3,
 } as const;
 
 // ------------------------------------------------------------

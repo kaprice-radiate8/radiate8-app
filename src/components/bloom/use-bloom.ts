@@ -10,7 +10,7 @@ import { useStoreData } from "@/lib/data";
 
 export function useBloom(dimensionOf: Record<string, DimensionId | undefined>) {
   const { data, ready } = useStoreData(async (s) => {
-    const [profile, journal, assessments, choices, notes, activities, seen] = await Promise.all([
+    const [profile, journal, assessments, choices, notes, activities, seen, intentions, milestones, weeklyActions, dailyActions] = await Promise.all([
       s.getProfile(),
       s.listJournal(),
       s.listAssessments(),
@@ -18,8 +18,12 @@ export function useBloom(dimensionOf: Record<string, DimensionId | undefined>) {
       s.listDedicationNotes(),
       s.listActivityLog(),
       s.getBloomSeen(),
+      s.listIntentions(),
+      s.listMilestones(),
+      s.listWeeklyActions(),
+      s.listDailyActions(),
     ]);
-    const petals = collectPetals({ journal, assessments, choices, notes, activities, dimensionOf });
+    const petals = collectPetals({ journal, assessments, choices, notes, activities, intentions, milestones, weeklyActions, dailyActions, dimensionOf });
     const seasons = buildSeasons(petals, profile.onboardedAt);
     return { seasons, season: seasons.at(-1)!, totalPetals: petals.length, seen };
   });

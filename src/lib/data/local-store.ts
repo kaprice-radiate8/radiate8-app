@@ -8,7 +8,23 @@
  * will provide the same functions, and src/lib/data/store.ts will
  * simply point at that one instead.
  */
-import type { ActivityLog, Assessment, BecomeChoice, BloomSeen, DataStore, DedicationNote, JournalEntry, MoodEntry, Profile } from "./types";
+import { intentions as intentionRules } from "@/config/app.config";
+import { addDays, dayKey } from "@/lib/dates";
+import type {
+  ActivityLog,
+  Assessment,
+  BecomeChoice,
+  BloomSeen,
+  DailyAction,
+  DataStore,
+  DedicationNote,
+  Intention,
+  JournalEntry,
+  Milestone,
+  MoodEntry,
+  Profile,
+  WeeklyAction,
+} from "./types";
 import { SaveError } from "./errors";
 
 /**
@@ -27,6 +43,10 @@ const KEYS = {
   dedicationNotes: PREFIX + "dedication-notes",
   bloomSeen: PREFIX + "bloom-seen",
   drafts: PREFIX + "drafts",
+  intentions: PREFIX + "intentions",
+  milestones: PREFIX + "milestones",
+  weeklyActions: PREFIX + "weekly-actions",
+  dailyActions: PREFIX + "daily-actions",
 };
 
 const defaultProfile: Profile = { name: "", onboardedAt: null };
@@ -65,10 +85,23 @@ function writeQuietly(key: string, value: unknown) {
   }
 }
 
+/** Tell every screen that data changed, so they refresh. */
+function notify() {
+  listeners.forEach((fn) => fn());
+}
+
 /** Save, then tell every screen so they refresh. Throws SaveError if saving fails. */
 function write(key: string, value: unknown) {
   writeQuietly(key, value);
-  listeners.forEach((fn) => fn());
+  notify();
+}
+
+/** Change the records whose id matches, keeping everything else as it is. */
+function patch<T extends { id: string }>(key: string, id: string, change: (item: T) => T) {
+  write(
+    key,
+    read<T[]>(key, []).map((item) => (item.id === id ? change(item) : item)),
+  );
 }
 
 const newestFirst = <T extends { createdAt: string }>(items: T[]) =>
@@ -164,6 +197,158 @@ export const localStore: DataStore = {
       KEYS.choices,
       all.map((c) => (c.id === id ? { ...c, livedAt: lived ? now : null, updatedAt: now } : c)),
     );
+  },
+
+  async listIntentions() {
+    return newestFirst(read<Intention[]>(KEYS.intentions, []));
+  },
+  async addIntention(intention, milestones, firstActions) {
+    const now = new Date().toISOString();
+    const saved: Intention = {
+      ...intention,
+      id: newId(),
+      startsOn: dayKey(),
+      endsOn: addDays(dayKey(), intentionRules.days),
+      status: "growing",
+      reachedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const newMilestones: Milestone[] = milestones.map((title) => ({ id: newId(), intentionId: saved.id, title, reachedAt: null, createdAt: now }));
+    const newActions: WeeklyAction[] = firstActions.map((a) => ({
+      id: newId(),
+      intentionId: saved.id,
+      title: a.title,
+      weekOf: a.weekOf,
+      livedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    }));
+    // The intention is saved last, so if anything fails nothing half-made ever shows.
+    writeQuietly(KEYS.milestones, [...read<Milestone[]>(KEYS.milestones, []), ...newMilestones]);
+    writeQuietly(KEYS.weeklyActions, [...read<WeeklyAction[]>(KEYS.weeklyActions, []), ...newActions]);
+    write(KEYS.intentions, [...read<Intention[]>(KEYS.intentions, []), saved]);
+    return saved;
+  },
+  async updateIntention(id, changes) {
+    const now = new Date().toISOString();
+    patch<Intention>(KEYS.intentions, id, (i) => ({
+      ...i,
+      ...changes,
+      // Reaching it is remembered with the day; moving it back clears that.
+      reachedAt: changes.status === undefined ? i.reachedAt : changes.status === "reached" ? (i.reachedAt ?? now) : null,
+      updatedAt: now,
+    }));
+  },
+  async renewIntention(id, startsOn) {
+    patch<Intention>(KEYS.intentions, id, (i) => ({
+      ...i,
+      startsOn,
+      endsOn: addDays(startsOn, intentionRules.days),
+      status: "growing",
+      reachedAt: null,
+      updatedAt: new Date().toISOString(),
+    }));
+  },
+  async deleteIntention(id) {
+    const actions = read<WeeklyAction[]>(KEYS.weeklyActions, []);
+    writeQuietly(
+      KEYS.weeklyActions,
+      actions.filter((a) => a.intentionId !== id),
+    );
+    writeQuietly(
+      KEYS.milestones,
+      read<Milestone[]>(KEYS.milestones, []).filter((m) => m.intentionId !== id),
+    );
+    // Her daily actions stay in her history, in her words; they just no longer point here.
+    const days = read<Record<string, DailyAction>>(KEYS.dailyActions, {});
+    for (const day of Object.values(days)) {
+      if (day.intentionId === id) Object.assign(day, { intentionId: null, weeklyActionId: null });
+    }
+    writeQuietly(KEYS.dailyActions, days);
+    write(
+      KEYS.intentions,
+      read<Intention[]>(KEYS.intentions, []).filter((i) => i.id !== id),
+    );
+  },
+
+  async listMilestones(intentionId) {
+    const all = read<Milestone[]>(KEYS.milestones, []);
+    return (intentionId ? all.filter((m) => m.intentionId === intentionId) : all).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  },
+  async addMilestone(intentionId, title) {
+    const saved: Milestone = { id: newId(), intentionId, title, reachedAt: null, createdAt: new Date().toISOString() };
+    write(KEYS.milestones, [...read<Milestone[]>(KEYS.milestones, []), saved]);
+    return saved;
+  },
+  async setMilestoneReached(id, reached) {
+    patch<Milestone>(KEYS.milestones, id, (m) => ({ ...m, reachedAt: reached ? new Date().toISOString() : null }));
+  },
+  async deleteMilestone(id) {
+    write(
+      KEYS.milestones,
+      read<Milestone[]>(KEYS.milestones, []).filter((m) => m.id !== id),
+    );
+  },
+
+  async listWeeklyActions(intentionId) {
+    const all = read<WeeklyAction[]>(KEYS.weeklyActions, []);
+    return (intentionId ? all.filter((a) => a.intentionId === intentionId) : all).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  },
+  async addWeeklyAction(action) {
+    const now = new Date().toISOString();
+    const saved: WeeklyAction = { ...action, id: newId(), livedAt: null, createdAt: now, updatedAt: now };
+    write(KEYS.weeklyActions, [...read<WeeklyAction[]>(KEYS.weeklyActions, []), saved]);
+    return saved;
+  },
+  async setWeeklyActionLived(id, lived) {
+    const now = new Date().toISOString();
+    const livedAt = lived ? now : null;
+    const days = read<Record<string, DailyAction>>(KEYS.dailyActions, {});
+    for (const day of Object.values(days)) if (day.weeklyActionId === id) day.livedAt = livedAt;
+    writeQuietly(KEYS.dailyActions, days);
+    patch<WeeklyAction>(KEYS.weeklyActions, id, (a) => ({ ...a, livedAt, updatedAt: now }));
+  },
+  async moveWeeklyAction(id, weekOf) {
+    patch<WeeklyAction>(KEYS.weeklyActions, id, (a) => ({ ...a, weekOf, updatedAt: new Date().toISOString() }));
+  },
+  async deleteWeeklyAction(id) {
+    const days = read<Record<string, DailyAction>>(KEYS.dailyActions, {});
+    for (const day of Object.values(days)) if (day.weeklyActionId === id) day.weeklyActionId = null;
+    writeQuietly(KEYS.dailyActions, days);
+    write(
+      KEYS.weeklyActions,
+      read<WeeklyAction[]>(KEYS.weeklyActions, []).filter((a) => a.id !== id),
+    );
+  },
+
+  async listDailyActions() {
+    return Object.values(read<Record<string, DailyAction>>(KEYS.dailyActions, {})).sort((a, b) => b.date.localeCompare(a.date));
+  },
+  async getDailyAction(date) {
+    return read<Record<string, DailyAction>>(KEYS.dailyActions, {})[date] ?? null;
+  },
+  async setDailyAction(date, action) {
+    const days = read<Record<string, DailyAction>>(KEYS.dailyActions, {});
+    // Choosing a weekly action she already lived keeps it lived.
+    const weekly = action.weeklyActionId ? read<WeeklyAction[]>(KEYS.weeklyActions, []).find((a) => a.id === action.weeklyActionId) : undefined;
+    const saved: DailyAction = { ...action, date, livedAt: weekly?.livedAt ?? null, at: new Date().toISOString() };
+    days[date] = saved;
+    write(KEYS.dailyActions, days);
+    return saved;
+  },
+  async setDailyActionLived(date, lived) {
+    const days = read<Record<string, DailyAction>>(KEYS.dailyActions, {});
+    const day = days[date];
+    if (!day) return;
+    if (day.weeklyActionId) return localStore.setWeeklyActionLived(day.weeklyActionId, lived);
+    day.livedAt = lived ? new Date().toISOString() : null;
+    write(KEYS.dailyActions, days);
+  },
+  async clearDailyAction(date) {
+    const days = read<Record<string, DailyAction>>(KEYS.dailyActions, {});
+    delete days[date];
+    write(KEYS.dailyActions, days);
   },
 
   async getBloomSeen() {

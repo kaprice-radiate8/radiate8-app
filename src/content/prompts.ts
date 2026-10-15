@@ -34,3 +34,17 @@ export const noticingPrompts = [
   "What feels quiet or neglected?",
   "Does anything surprise you?",
 ];
+
+/** Planting a 90-day intention, one question per step. */
+export const plantingPrompts = {
+  title: "What would you love to grow in the next 90 days?",
+  vision: "Why does it matter to you?",
+  visionHint: "Picture yourself 90 days from now. What feels different?",
+  milestones: "What would tell you you’re on your way?",
+  milestonesHint: "A few signs along the path. Leave these empty if you’d rather discover them.",
+  actions: "What’s one small thing you could do this week?",
+  actionsHint: "Small is beautiful. You can add more any time.",
+};
+
+/** Today's one meaningful action. */
+export const oneActionPrompt = "What’s one meaningful thing for today?";

@@ -1,8 +1,9 @@
 /**
  * HER BLOOM: turns what she has done into petals, flowers and bouquets.
  *
- * - Each reflection, Radiate 8, Dedication writing and lived Become choice
- *   is one petal (see `bloom.grows` in app.config.ts).
+ * - Each reflection, Radiate 8, Dedication writing, lived Become choice and
+ *   lived action is one petal (see `bloom.grows` in app.config.ts).
+ *   Milestones and intentions she reached are gold-edged petals.
  * - A petal's color is the dimension it's about.
  * - Every `petalsPerFlower` petals finish a flower, and a new one begins.
  * - Her seasons are 90 days from her own first day. When a season ends,
@@ -10,7 +11,7 @@
  * Nothing is ever taken away: no wilting, no resets, no counting misses.
  */
 import { bloom, type DimensionId } from "@/config/app.config";
-import type { ActivityLog, Assessment, BecomeChoice, DedicationNote, JournalEntry } from "./data/types";
+import type { ActivityLog, Assessment, BecomeChoice, DailyAction, DedicationNote, Intention, JournalEntry, Milestone, WeeklyAction } from "./data/types";
 
 export type Petal = {
   at: string;
@@ -38,6 +39,10 @@ type Sources = {
   choices: BecomeChoice[];
   notes: DedicationNote[];
   activities: ActivityLog[];
+  intentions: Intention[];
+  milestones: Milestone[];
+  weeklyActions: WeeklyAction[];
+  dailyActions: DailyAction[];
   /** First dimension tag of each Dedication and Daily Activity, by id. */
   dimensionOf: Record<string, DimensionId | undefined>;
 };
@@ -56,6 +61,18 @@ export function collectPetals(s: Sources): Petal[] {
   if (g.assessments) for (const a of s.assessments) petals.push({ at: a.takenAt, dimensionId: brightest(a), gold: false });
   if (g.dedicationNotes) for (const n of s.notes) petals.push({ at: n.createdAt, dimensionId: s.dimensionOf[n.dedicationId] ?? null, gold: false });
   if (g.livedChoices) for (const c of s.choices) if (c.livedAt) petals.push({ at: c.livedAt, dimensionId: c.dimensionIds[0] ?? null, gold: true });
+  if (g.livedActions || g.milestones) {
+    const dimensionOfIntention = (id: string | null) => s.intentions.find((i) => i.id === id)?.dimensionIds[0] ?? null;
+    if (g.livedActions) {
+      for (const a of s.weeklyActions) if (a.livedAt) petals.push({ at: a.livedAt, dimensionId: dimensionOfIntention(a.intentionId), gold: false });
+      // A daily action that is one of her weekly actions already opened its petal above.
+      for (const d of s.dailyActions) if (d.livedAt && !d.weeklyActionId) petals.push({ at: d.livedAt, dimensionId: dimensionOfIntention(d.intentionId), gold: false });
+    }
+    if (g.milestones) {
+      for (const m of s.milestones) if (m.reachedAt) petals.push({ at: m.reachedAt, dimensionId: dimensionOfIntention(m.intentionId), gold: true });
+      for (const i of s.intentions) if (i.reachedAt) petals.push({ at: i.reachedAt, dimensionId: i.dimensionIds[0] ?? null, gold: true });
+    }
+  }
   if (g.dailyActivities) for (const l of s.activities) petals.push({ at: l.at, dimensionId: s.dimensionOf[l.activityId] ?? null, gold: false });
   return petals.sort((a, b) => a.at.localeCompare(b.at));
 }

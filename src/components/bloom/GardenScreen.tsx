@@ -21,6 +21,8 @@ const grows = [
   { on: rules.grows.dedicationNotes, words: "Writing in a Dedication" },
   { on: rules.grows.dailyActivities, words: "A Daily Activity" },
   { on: rules.grows.livedChoices, words: "Living a Become choice: a gold-edged petal" },
+  { on: rules.grows.livedActions, words: "Living one of your actions" },
+  { on: rules.grows.milestones, words: "Reaching a milestone or an intention: a gold-edged petal" },
 ].filter((g) => g.on);
 
 function seasonDates(s: Season) {

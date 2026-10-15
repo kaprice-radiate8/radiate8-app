@@ -13,7 +13,7 @@ import { BookOpen, Camera, ChartPie, Sun } from "lucide-react";
 
 const tabs = [
   { href: "/", label: "Today", icon: <Sun size={20} strokeWidth={1.4} />, also: [] as string[] },
-  { href: "/radiate8", label: "Radiate 8", icon: <ChartPie size={20} strokeWidth={1.4} />, also: ["/dimension"] },
+  { href: "/radiate8", label: "Radiate 8", icon: <ChartPie size={20} strokeWidth={1.4} />, also: ["/dimension", "/intentions"] },
   { href: "/moments", label: "Moments", icon: <Camera size={20} strokeWidth={1.4} />, also: [] },
   { href: "/stories", label: "Stories", icon: <BookOpen size={20} strokeWidth={1.4} />, also: [] },
 ];

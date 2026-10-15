@@ -3,7 +3,8 @@
 /**
  * DIMENSION SCREEN (web address: /dimension/health, /dimension/joy, ...)
  * Where she placed this dimension in her latest Radiate 8, a way to
- * explore it through Reflect, Bloom, Become, her choices, and her pages.
+ * explore it through Reflect, Bloom, Become, the intentions she's growing
+ * here, her choices, and her pages.
  */
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -12,6 +13,7 @@ import { useStoreData } from "@/lib/data";
 import { longDate } from "@/lib/dates";
 import { Icon } from "../Icon";
 import { JournalPages } from "../journal/JournalPages";
+import { GrowingIntentions } from "../intentions/IntentionList";
 import { BecomeChoices } from "../radiate8/BecomeChoices";
 
 export function DimensionScreen({ dimensionId }: { dimensionId: DimensionId }) {
@@ -50,6 +52,7 @@ export function DimensionScreen({ dimensionId }: { dimensionId: DimensionId }) {
         </Link>
       </div>
 
+      <GrowingIntentions dimensionId={d.id} title={`Growing in ${d.name}`} />
       <BecomeChoices dimensionId={d.id} />
       <JournalPages dimensionId={d.id} />
     </div>

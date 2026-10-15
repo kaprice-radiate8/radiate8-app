@@ -83,11 +83,21 @@ export function Journey() {
           </>
         )}
         <div className="mt-8 space-y-3">
-          <Link href="/radiate8" className={primaryButton}>
-            Back to your Radiate 8
-          </Link>
-          {/* When Moments arrives, this becomes the main step: "Save a moment from today". */}
-          <p className="text-sm text-plum-soft">Soon you&rsquo;ll be able to save a moment of living it, right here.</p>
+          {savedChoice ? (
+            <>
+              <p className="text-sm text-plum-soft">Ready to live it? Shape it into 90 days, with a few small actions for this week.</p>
+              <Link href={`/intentions/new?from=${savedChoice.id}`} className={primaryButton}>
+                Shape it into 90 days
+              </Link>
+              <Link href="/radiate8" className="block py-2 text-sm text-plum-soft">
+                Not now
+              </Link>
+            </>
+          ) : (
+            <Link href="/radiate8" className={primaryButton}>
+              Back to your Radiate 8
+            </Link>
+          )}
         </div>
       </div>
     );

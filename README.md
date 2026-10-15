@@ -17,7 +17,8 @@ To check that everything builds before sharing: `npm run build`.
 | You want to change... | Edit this file |
 | --- | --- |
 | App name, tagline, colors, the 8 dimensions, mood options, the words shown for each place on the Radiate 8 | `src/config/app.config.ts` |
-| The Reflect, Bloom, Become questions, and "What do you notice?" | `src/content/prompts.ts` |
+| The Reflect, Bloom, Become questions, "What do you notice?", and the 90-day intention questions | `src/content/prompts.ts` |
+| Intention length (90 days) and how many milestones and actions planting asks for | `intentions` in `src/config/app.config.ts` |
 | Fonts (Cormorant Garamond, DM Sans, and the script accent) | `src/config/fonts.ts` |
 | The seven-dot micro mark (logo) | `src/components/MicroMark.tsx` |
 | Songs and Today's Dedication | `src/content/music.ts` |
@@ -32,6 +33,8 @@ src/
     radiate8/            Radiate 8 home (/radiate8), the assessment (/assess),
                          compare (/compare) and Reflect, Bloom, Become (/explore)
     dimension/[id]/      One page per dimension (/dimension/joy ...)
+    intentions/          90-day intentions (/intentions), planting one (/new)
+                         and one intention (/view?id=...)
     moments/ stories/    Placeholders until photo storage exists
     profile/             Profile (/profile)
     welcome/             First-visit onboarding (/welcome)
@@ -39,6 +42,7 @@ src/
     manifest.ts          How the app installs on a phone
   components/            The building blocks each screen is made from
     radiate8/            Assessment, compare, Become choices, dimension picker
+    intentions/          Planting, one intention, and intention lists
     journey/             Reflect, Bloom, Become
     today/  journal/  music/  onboarding/  wheel/
   config/                The one config file (plus a helper that turns colors into CSS)
@@ -51,6 +55,12 @@ public/
   sw.js                  Offline support
 scripts/                 One-off helpers that regenerate placeholder audio and icons
 ```
+
+## Plans and decisions
+
+- `docs/roadmap.md`: which brief features exist, the phased plan, and open decisions.
+- `docs/data-model.md`: the planned Supabase tables, privacy and sharing rules.
+- `docs/content-model.md`: Daily Activities and Dedications as editable content.
 
 ## Checking your changes
 

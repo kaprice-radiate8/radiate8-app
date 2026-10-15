@@ -8,9 +8,4 @@ export { SaveError } from "./errors";
 export * from "./types";
 
 /** Today's date as "YYYY-MM-DD" in the person's own time zone. */
-export function todayKey(date = new Date()): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
+export { dayKey as todayKey } from "@/lib/dates";

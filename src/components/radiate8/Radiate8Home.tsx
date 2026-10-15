@@ -3,7 +3,7 @@
 /**
  * RADIATE 8 HOME (web address: /radiate8)
  * Her latest Radiate 8, what she noticed, where she can go next,
- * her Become choices, and every past reflection.
+ * her 90-day intentions, her Become choices, and every past reflection.
  */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import { useStoreData } from "@/lib/data";
 import { longDate } from "@/lib/dates";
 import { Icon } from "../Icon";
 import { Wheel } from "../wheel/Wheel";
+import { GrowingIntentions } from "../intentions/IntentionList";
 import { BecomeChoices } from "./BecomeChoices";
 
 const primaryLink =
@@ -98,6 +99,8 @@ export function Radiate8Home() {
           ))}
         </ul>
       </section>
+
+      <GrowingIntentions />
 
       <BecomeChoices empty="When you reach Become, the choices you make will gather here." />
 

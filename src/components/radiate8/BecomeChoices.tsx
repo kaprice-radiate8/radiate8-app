@@ -5,8 +5,10 @@
  * What she chose to live, shown back to her gently.
  * No deadlines, no checkmarks, no reminders: just her own words, kept.
  * When she has lived one, she can say so, and it opens a gold-edged petal.
+ * When she's ready to live one, she can shape it into a 90-day intention.
  */
 import { useState } from "react";
+import Link from "next/link";
 import { getDimension, type DimensionId } from "@/config/app.config";
 import { store, useStoreData, type BecomeChoice } from "@/lib/data";
 import { dayLabel } from "@/lib/dates";
@@ -115,6 +117,11 @@ function Choice({ choice }: { choice: BecomeChoice }) {
         </div>
       )}
 
+      {open && editing === null && !confirming && !choice.livedAt && (
+        <Link href={`/intentions/new?from=${choice.id}`} className="mx-5 mb-3 flex items-center justify-center rounded-full bg-blush/60 px-4 py-2.5 text-sm text-plum">
+          Shape it into a 90-day intention
+        </Link>
+      )}
       {open && editing === null && (
         <div className="flex items-center justify-end gap-2 border-t border-line/70 px-5 py-3">
           {confirming ? (
