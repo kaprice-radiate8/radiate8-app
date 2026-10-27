@@ -154,6 +154,8 @@ begin
   reset role;
 
   -- ---- Deleting a member removes everything she owns ----
+  -- Newer Supabase versions guard direct deletes from storage; this test's own row is the exception.
+  perform set_config('storage.allow_delete_query', 'true', true);
   delete from storage.objects where bucket_id = 'member-media' and name = a || '/p1.jpg';
   delete from auth.users where id in (a, b);
   foreach t in array array[
