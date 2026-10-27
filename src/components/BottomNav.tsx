@@ -2,18 +2,19 @@
 
 /**
  * BOTTOM NAVIGATION
- * Four tabs, following the Radiate build brief: Today, Radiate 8,
+ * Five tabs: Today, Vision (her board and 90-day intentions), Radiate 8,
  * Moments and Stories. Her profile lives behind the icon at the top of Today.
  * Daily Activities and Dedications are reached from Today. Music lives inside
  * the Daily Activities, not in a tab of its own.
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Camera, ChartPie, Sun } from "lucide-react";
+import { BookOpen, Camera, ChartPie, Sparkles, Sun } from "lucide-react";
 
 const tabs = [
   { href: "/", label: "Today", icon: <Sun size={20} strokeWidth={1.4} />, also: [] as string[] },
-  { href: "/radiate8", label: "Radiate 8", icon: <ChartPie size={20} strokeWidth={1.4} />, also: ["/dimension", "/intentions"] },
+  { href: "/vision", label: "Vision", icon: <Sparkles size={20} strokeWidth={1.4} />, also: ["/intentions"] },
+  { href: "/radiate8", label: "Radiate 8", icon: <ChartPie size={20} strokeWidth={1.4} />, also: ["/dimension"] },
   { href: "/moments", label: "Moments", icon: <Camera size={20} strokeWidth={1.4} />, also: [] },
   { href: "/stories", label: "Stories", icon: <BookOpen size={20} strokeWidth={1.4} />, also: [] },
 ];

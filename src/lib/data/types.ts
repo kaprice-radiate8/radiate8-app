@@ -177,6 +177,32 @@ export type DailyAction = {
 
 export type NewDailyAction = Pick<DailyAction, "text" | "weeklyActionId" | "intentionId">;
 
+// ---- Vision board ----
+
+/**
+ * One item on her vision board: an image or a few words, perhaps tagged with
+ * a dimension, perhaps linked to one of her 90-day intentions.
+ */
+export type VisionItem = {
+  id: string;
+  kind: "image" | "words";
+  /** Where to show the image from (a private, short-lived link). Null for words. */
+  imageUrl: string | null;
+  /** The words: the whole item for a words item, a caption for an image. */
+  words: string;
+  dimensionId: DimensionId | null;
+  intentionId: string | null;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NewVisionItem = Pick<VisionItem, "words" | "dimensionId">;
+export type VisionItemChanges = Partial<Pick<VisionItem, "words" | "dimensionId" | "intentionId">>;
+
+/** A photo ready to save: already resized, with location data removed (see lib/images.ts). */
+export type PreparedImage = { blob: Blob; width: number; height: number };
+
 export interface DataStore {
   getProfile(): Promise<Profile>;
   saveProfile(profile: Profile): Promise<void>;
@@ -242,6 +268,18 @@ export interface DataStore {
   /** Mark today's action lived (or not yet). If it's a weekly action, that one is marked too. */
   setDailyActionLived(date: string, lived: boolean): Promise<void>;
   clearDailyAction(date: string): Promise<void>;
+
+  /** Her vision board, in her order. */
+  listVisionItems(): Promise<VisionItem[]>;
+  /** Add a photo to the end of her board. */
+  addVisionImage(image: PreparedImage, details: NewVisionItem): Promise<VisionItem>;
+  /** Add a few words to the end of her board. */
+  addVisionWords(details: NewVisionItem): Promise<VisionItem>;
+  updateVisionItem(id: string, changes: VisionItemChanges): Promise<void>;
+  /** Put her items in this order (every id, first to last). */
+  reorderVisionItems(ids: string[]): Promise<void>;
+  /** Remove an item (and its photo). */
+  deleteVisionItem(id: string): Promise<void>;
 
   getBloomSeen(): Promise<BloomSeen>;
   setBloomSeen(seen: BloomSeen): Promise<void>;

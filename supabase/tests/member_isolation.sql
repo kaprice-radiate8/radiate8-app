@@ -38,7 +38,9 @@ begin
   insert into public.daily_actions (date, text, weekly_action_id, goal_id) values ('2026-10-27', 'A today', 'w1', 'g1');
   insert into public.activity_log (activity_id) values ('rooted');
   insert into public.dedication_notes (dedication_id, text) values ('the-unhurried-ten', 'A note');
-  insert into public.media (storage_path, mime_type, bytes) values (a || '/p1.jpg', 'image/jpeg', 1000);
+  insert into public.media (id, storage_path, mime_type, bytes) values ('p1', a || '/p1.jpg', 'image/jpeg', 1000);
+  insert into public.vision_items (id, kind, media_id, goal_id) values ('v1', 'image', 'p1', 'g1');
+  insert into public.vision_items (id, kind, words) values ('v2', 'words', 'A vision');
   insert into storage.objects (bucket_id, name, owner_id) values ('member-media', a || '/p1.jpg', a::text);
 
   -- A's own reads work.
@@ -99,7 +101,7 @@ begin
 
   foreach t in array array[
     'consents', 'moods', 'assessments', 'assessment_scores', 'journal_entries', 'become_choices',
-    'goals', 'milestones', 'weekly_actions', 'daily_actions', 'activity_log', 'dedication_notes', 'media'
+    'goals', 'milestones', 'weekly_actions', 'daily_actions', 'activity_log', 'dedication_notes', 'media', 'vision_items'
   ]
   loop
     execute format('select count(*) from public.%I', t) into n;
@@ -168,7 +170,7 @@ begin
   delete from auth.users where id in (a, b);
   foreach t in array array[
     'consents', 'moods', 'assessments', 'assessment_scores', 'journal_entries', 'become_choices',
-    'goals', 'milestones', 'weekly_actions', 'daily_actions', 'activity_log', 'dedication_notes', 'media'
+    'goals', 'milestones', 'weekly_actions', 'daily_actions', 'activity_log', 'dedication_notes', 'media', 'vision_items'
   ]
   loop
     execute format('select count(*) from public.%I where user_id in (%L, %L)', t, a, b) into n;

@@ -10,6 +10,7 @@
  */
 import { intentions as intentionRules } from "@/config/app.config";
 import { addDays, dayKey } from "@/lib/dates";
+import { blobToDataUrl, prepareImage } from "@/lib/images";
 import type {
   ActivityLog,
   Assessment,
@@ -23,6 +24,7 @@ import type {
   Milestone,
   MoodEntry,
   Profile,
+  VisionItem,
   WeeklyAction,
 } from "./types";
 import { SaveError } from "./errors";
@@ -47,6 +49,7 @@ const KEYS = {
   milestones: PREFIX + "milestones",
   weeklyActions: PREFIX + "weekly-actions",
   dailyActions: PREFIX + "daily-actions",
+  vision: PREFIX + "vision-items",
 };
 
 const defaultProfile: Profile = { name: "", onboardedAt: null };
@@ -106,6 +109,22 @@ function patch<T extends { id: string }>(key: string, id: string, change: (item:
 
 const newestFirst = <T extends { createdAt: string }>(items: T[]) =>
   [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+/** Save a new vision item at the end of her board. */
+function addVisionItem(item: Pick<VisionItem, "kind" | "imageUrl" | "words" | "dimensionId">): VisionItem {
+  const all = read<VisionItem[]>(KEYS.vision, []);
+  const now = new Date().toISOString();
+  const saved: VisionItem = {
+    ...item,
+    id: newId(),
+    intentionId: null,
+    position: Math.max(0, ...all.map((v) => v.position)) + 1,
+    createdAt: now,
+    updatedAt: now,
+  };
+  write(KEYS.vision, [...all, saved]);
+  return saved;
+}
 
 // ---- the store ---------------------------------------------------------
 
@@ -266,6 +285,11 @@ export const localStore: DataStore = {
       if (day.intentionId === id) Object.assign(day, { intentionId: null, weeklyActionId: null });
     }
     writeQuietly(KEYS.dailyActions, days);
+    // Images linked to it stay on her board, unlinked.
+    writeQuietly(
+      KEYS.vision,
+      read<VisionItem[]>(KEYS.vision, []).map((v) => (v.intentionId === id ? { ...v, intentionId: null } : v)),
+    );
     write(
       KEYS.intentions,
       read<Intention[]>(KEYS.intentions, []).filter((i) => i.id !== id),
@@ -349,6 +373,39 @@ export const localStore: DataStore = {
     const days = read<Record<string, DailyAction>>(KEYS.dailyActions, {});
     delete days[date];
     write(KEYS.dailyActions, days);
+  },
+
+  async listVisionItems() {
+    return [...read<VisionItem[]>(KEYS.vision, [])].sort((a, b) => a.position - b.position || a.createdAt.localeCompare(b.createdAt));
+  },
+  async addVisionImage(image, details) {
+    // On the device, photos are kept smaller: browser storage holds only a few megabytes.
+    let imageUrl: string;
+    try {
+      imageUrl = await blobToDataUrl((await prepareImage(image.blob, 900, 0.75)).blob);
+    } catch (cause) {
+      throw new SaveError(cause);
+    }
+    return addVisionItem({ kind: "image", imageUrl, ...details });
+  },
+  async addVisionWords(details) {
+    return addVisionItem({ kind: "words", imageUrl: null, ...details });
+  },
+  async updateVisionItem(id, changes) {
+    patch<VisionItem>(KEYS.vision, id, (v) => ({ ...v, ...changes, updatedAt: new Date().toISOString() }));
+  },
+  async reorderVisionItems(ids) {
+    const order = new Map(ids.map((id, i) => [id, i + 1]));
+    write(
+      KEYS.vision,
+      read<VisionItem[]>(KEYS.vision, []).map((v) => ({ ...v, position: order.get(v.id) ?? v.position })),
+    );
+  },
+  async deleteVisionItem(id) {
+    write(
+      KEYS.vision,
+      read<VisionItem[]>(KEYS.vision, []).filter((v) => v.id !== id),
+    );
   },
 
   async getBloomSeen() {

@@ -7,6 +7,8 @@
  * why it matters, a few milestones, and this week's first small actions.
  * Only the first step is needed; everything else can be left for later.
  * Arriving from a Become choice starts with her own words already there.
+ * Arriving from her vision board (?vision=<item id>) shows the image, starts
+ * with its words, and links the image to the new intention.
  */
 import { useState } from "react";
 import Link from "next/link";
@@ -14,7 +16,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getDimension, intentions as rules, type DimensionId } from "@/config/app.config";
 import { plantingPrompts as ask } from "@/content/prompts";
-import { store, useStoreData } from "@/lib/data";
+import { store, useStoreData, type VisionItem } from "@/lib/data";
 import { dayKey, weekOf } from "@/lib/dates";
 import { AutoGrowTextarea } from "../journal/AutoGrowTextarea";
 import { DimensionPicker } from "../radiate8/DimensionPicker";
@@ -38,19 +40,35 @@ function fromLink(param: string | null): DimensionId[] {
 export function PlantIntention() {
   const params = useSearchParams();
   const fromId = params.get("from");
-  const { data: choices, ready } = useStoreData((s) => s.listBecomeChoices());
+  const visionId = params.get("vision");
+  const { data, ready } = useStoreData(async (s) => {
+    const [choices, visionItems] = await Promise.all([s.listBecomeChoices(), visionId ? s.listVisionItems() : Promise.resolve([])]);
+    return { choices, visionItems };
+  });
   if (!ready) return null;
-  const choice = fromId ? choices?.find((c) => c.id === fromId) : undefined;
+  const choice = fromId ? data?.choices.find((c) => c.id === fromId) : undefined;
+  const visionItem = visionId ? data?.visionItems.find((v) => v.id === visionId) : undefined;
   return (
     <Steps
       becomeChoiceId={choice?.id ?? null}
-      startTitle={choice?.text ?? ""}
+      visionItem={visionItem ?? null}
+      startTitle={choice?.text ?? visionItem?.words ?? ""}
       startDimensions={choice?.dimensionIds ?? fromLink(params.get("d"))}
     />
   );
 }
 
-function Steps({ becomeChoiceId, startTitle, startDimensions }: { becomeChoiceId: string | null; startTitle: string; startDimensions: DimensionId[] }) {
+function Steps({
+  becomeChoiceId,
+  visionItem,
+  startTitle,
+  startDimensions,
+}: {
+  becomeChoiceId: string | null;
+  visionItem: VisionItem | null;
+  startTitle: string;
+  startDimensions: DimensionId[];
+}) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState(startTitle);
@@ -72,6 +90,8 @@ function Steps({ becomeChoiceId, startTitle, startDimensions }: { becomeChoiceId
         filled(milestones),
         filled(actions).map((a) => ({ title: a, weekOf: week })),
       );
+      // The intention is safely planted; if the link to her image doesn't save, she can link it from the board.
+      if (visionItem) await store.updateVisionItem(visionItem.id, { intentionId: saved.id }).catch(() => {});
       router.replace(`/intentions/view?id=${saved.id}&planted=1`);
     } catch {
       // Not saved: everything she wrote stays on the screen.
@@ -105,6 +125,10 @@ function Steps({ becomeChoiceId, startTitle, startDimensions }: { becomeChoiceId
 
         {step === 0 && (
           <>
+            {visionItem?.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element -- private, short-lived links; not suited to the image optimizer
+              <img src={visionItem.imageUrl} alt={visionItem.words || "From your vision board"} className="mt-4 max-h-56 w-auto rounded-2xl" />
+            )}
             <h1 className="mt-3 font-serif text-4xl text-plum">{ask.title}</h1>
             <label htmlFor="intention-title" className="sr-only">
               Your intention

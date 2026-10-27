@@ -28,6 +28,7 @@ import type {
   Intention,
   JournalEntry,
   Milestone,
+  VisionItem,
   WeeklyAction,
 } from "./types";
 
@@ -142,6 +143,28 @@ const toDaily = (r: Row): DailyAction => ({
 });
 
 const toActivity = (r: Row): ActivityLog => ({ id: r.id as string, activityId: r.activity_id as string, felt: (r.felt as string | null) ?? null, at: r.at as string });
+
+/** Photos live in her own folder of this private bucket, shown through links that expire. */
+const PHOTOS = "member-media";
+const PHOTO_LINK_SECONDS = 60 * 60;
+
+const toVision = (r: Row, links: Map<string, string>): VisionItem => {
+  const path = (r.media as Row | null)?.storage_path as string | undefined;
+  return {
+    id: r.id as string,
+    kind: r.kind as VisionItem["kind"],
+    imageUrl: path ? (links.get(path) ?? null) : null,
+    words: r.words as string,
+    dimensionId: (r.dimension_id as DimensionId | null) ?? null,
+    intentionId: (r.goal_id as string | null) ?? null,
+    position: r.position as number,
+    createdAt: r.created_at as string,
+    updatedAt: r.updated_at as string,
+  };
+};
+
+/** A new item goes at the end: seconds since 1970 are always larger than a reordered position (1, 2, 3...). */
+const endOfBoard = () => Math.floor(Date.now() / 1000);
 
 const toNote = (r: Row): DedicationNote => ({
   id: r.id as string,
@@ -367,6 +390,73 @@ export const supabaseStore: DataStore = {
   async addDedicationNote(note) {
     await memberId();
     return toNote(await save(db().from("dedication_notes").insert({ dedication_id: note.dedicationId, text: note.text }).select().single()));
+  },
+
+  async listVisionItems() {
+    const rows = await load(
+      db().from("vision_items").select("*, media(storage_path)").eq("board", "main").order("position").order("created_at"),
+    );
+    const paths = rows.map((r) => (r.media as Row | null)?.storage_path as string | undefined).filter((p): p is string => Boolean(p));
+    const links = new Map<string, string>();
+    if (paths.length) {
+      const signed = await load<{ path: string | null; signedUrl: string }[]>(db().storage.from(PHOTOS).createSignedUrls(paths, PHOTO_LINK_SECONDS));
+      for (const link of signed) if (link.path && link.signedUrl) links.set(link.path, link.signedUrl);
+    }
+    return rows.map((r) => toVision(r, links));
+  },
+  async addVisionImage(image, details) {
+    const member = await memberId();
+    const mediaId = crypto.randomUUID();
+    const path = `${member}/${mediaId}.jpg`;
+    const photos = db().storage.from(PHOTOS);
+    const { error: uploadError } = await photos.upload(path, image.blob, { contentType: "image/jpeg", cacheControl: "3600", upsert: false });
+    if (uploadError) throw new SaveError(uploadError);
+    try {
+      await save(db().from("media").insert({ id: mediaId, storage_path: path, mime_type: "image/jpeg", bytes: image.blob.size, width: image.width, height: image.height }));
+      const row = await save(
+        db()
+          .from("vision_items")
+          .insert({ kind: "image", media_id: mediaId, words: details.words, dimension_id: details.dimensionId, position: endOfBoard() })
+          .select("*, media(storage_path)")
+          .single(),
+      );
+      const { data: link } = await photos.createSignedUrl(path, PHOTO_LINK_SECONDS);
+      return toVision(row, new Map(link ? [[path, link.signedUrl]] : []));
+    } catch (error) {
+      // Don't leave a photo behind that nothing points at.
+      await photos.remove([path]).catch(() => {});
+      throw error;
+    }
+  },
+  async addVisionWords(details) {
+    await memberId();
+    const row = await save(
+      db().from("vision_items").insert({ kind: "words", words: details.words, dimension_id: details.dimensionId, position: endOfBoard() }).select().single(),
+    );
+    return toVision(row, new Map());
+  },
+  async updateVisionItem(id, changes) {
+    const patch: Row = { updated_at: now() };
+    if (changes.words !== undefined) patch.words = changes.words;
+    if (changes.dimensionId !== undefined) patch.dimension_id = changes.dimensionId;
+    if (changes.intentionId !== undefined) patch.goal_id = changes.intentionId;
+    await save(db().from("vision_items").update(patch).eq("id", id));
+  },
+  async reorderVisionItems(ids) {
+    await save(db().rpc("reorder_vision_items", { ids }));
+  },
+  async deleteVisionItem(id) {
+    const item = await load<Row | null>(db().from("vision_items").select("media_id, media(storage_path)").eq("id", id).maybeSingle());
+    if (!item) return;
+    const path = (item.media as Row | null)?.storage_path as string | undefined;
+    if (!item.media_id || !path) {
+      await save(db().from("vision_items").delete().eq("id", id));
+      return;
+    }
+    // The photo first, then its record (which removes the item with it).
+    const { error } = await db().storage.from(PHOTOS).remove([path]);
+    if (error) throw new SaveError(error);
+    await save(db().from("media").delete().eq("id", item.media_id as string));
   },
 
   async getBloomSeen() {

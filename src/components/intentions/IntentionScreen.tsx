@@ -13,7 +13,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronLeft, Plus, X } from "lucide-react";
-import { store, useStoreData, type Intention, type Milestone, type WeeklyAction } from "@/lib/data";
+import { store, useStoreData, type Intention, type Milestone, type VisionItem, type WeeklyAction } from "@/lib/data";
 import { dayKey, dayLabel, longDate, shortDay, weekOf } from "@/lib/dates";
 import { WEEKS_IN_INTENTION, cameFullCircle, lived, stillWaiting, thisWeek, weekNumber } from "@/lib/intentions";
 import { AutoGrowTextarea } from "../journal/AutoGrowTextarea";
@@ -28,13 +28,13 @@ export function IntentionScreen() {
   const id = params.get("id") ?? "";
   const justPlanted = params.get("planted") === "1";
   const { data, ready } = useStoreData(async (s) => {
-    const [all, milestones, actions] = await Promise.all([s.listIntentions(), s.listMilestones(id), s.listWeeklyActions(id)]);
-    return { intention: all.find((i) => i.id === id), milestones, actions };
+    const [all, milestones, actions, visionItems] = await Promise.all([s.listIntentions(), s.listMilestones(id), s.listWeeklyActions(id), s.listVisionItems()]);
+    return { intention: all.find((i) => i.id === id), milestones, actions, vision: visionItems.filter((v) => v.intentionId === id) };
   });
   const [problem, setProblem] = useState<string | null>(null);
 
   if (!ready || !data) return null;
-  const { intention, milestones, actions } = data;
+  const { intention, milestones, actions, vision } = data;
 
   if (!intention) {
     return (
@@ -61,6 +61,7 @@ export function IntentionScreen() {
       <div>
         <Back />
         <Header intention={intention} attempt={attempt} />
+        {vision.length > 0 && <FromYourBoard items={vision} />}
         {justPlanted && growing && (
           <p className="rise mt-4 text-center font-script text-4xl text-plum">Beautifully planted.</p>
         )}
@@ -101,6 +102,26 @@ export function IntentionScreen() {
 
       <Choices intention={intention} attempt={attempt} />
     </div>
+  );
+}
+
+/** The images (and words) from her vision board that this intention grows toward. */
+function FromYourBoard({ items }: { items: VisionItem[] }) {
+  return (
+    <ul className="mt-4 flex gap-3 overflow-x-auto pb-1" aria-label="From your vision board">
+      {items.map((v) => (
+        <li key={v.id} className="shrink-0">
+          <Link href={`/vision/item?id=${v.id}`} aria-label={v.words || "An image from your vision board"} className="block">
+            {v.kind === "image" && v.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- private, short-lived links; not suited to the image optimizer
+              <img src={v.imageUrl} alt="" className="h-28 w-auto rounded-2xl object-cover shadow-[0_10px_24px_-16px_rgb(75_48_74/0.5)]" />
+            ) : (
+              <span className="flex h-28 w-36 items-center justify-center rounded-2xl bg-blush/60 p-3 text-center font-serif text-base leading-snug text-plum italic">{v.words}</span>
+            )}
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
