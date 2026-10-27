@@ -104,11 +104,19 @@ begin
   loop
     execute format('select count(*) from public.%I', t) into n;
     if n <> 0 then raise exception 'FAIL: % rows of another member are readable', t; end if;
-    execute format('update public.%I set user_id = user_id where user_id = %L', t, a);
-    get diagnostics n = row_count;
+    -- Either nothing matches (row-level security) or the change is refused outright
+    -- (consents can never be changed by anyone): both mean A's rows are safe.
+    begin
+      execute format('update public.%I set user_id = user_id where user_id = %L', t, a);
+      get diagnostics n = row_count;
+    exception when insufficient_privilege then n := 0;
+    end;
     if n <> 0 then raise exception 'FAIL: % rows of another member are changeable', t; end if;
-    execute format('delete from public.%I where user_id = %L', t, a);
-    get diagnostics n = row_count;
+    begin
+      execute format('delete from public.%I where user_id = %L', t, a);
+      get diagnostics n = row_count;
+    exception when insufficient_privilege then n := 0;
+    end;
     if n <> 0 then raise exception 'FAIL: % rows of another member are deletable', t; end if;
   end loop;
 
