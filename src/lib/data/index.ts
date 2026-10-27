@@ -4,7 +4,7 @@
  */
 export { store } from "./store";
 export { useStoreData } from "./use-store-data";
-export { SaveError } from "./errors";
+export { LoadError, SaveError } from "./errors";
 export * from "./types";
 
 /** Today's date as "YYYY-MM-DD" in the person's own time zone. */

@@ -7,17 +7,24 @@
  *   1. Welcome: the name and "Come back to yourself."
  *   2. The method: Reflect. Bloom. Become.
  *   3. The Radiate 8 wheel, filling softly
- *   4. "What should we call you?"
+ *   4. With accounts on: her email, to sign in or create her account.
+ *      Then (or straight away, with accounts off): "What should we call you?"
+ *
+ * `?step=name` opens the name step (after a sign-in link); `?step=account`
+ * opens the sign-in step (for someone who already has an account).
  *
  * The words come from the Radiate 8 brand guide. Edit them in `steps` below.
  */
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { brand } from "@/config/app.config";
+import { backend } from "@/config/backend";
 import { store, useStoreData } from "@/lib/data";
 import { MicroMark } from "../MicroMark";
 import { PaleEight } from "../PaleEight";
+import { useAccount } from "../account/AccountGate";
+import { SignInForm } from "../account/SignInForm";
 import { SaveNotice } from "../SaveNotice";
 import { Wheel, type Places } from "../wheel/Wheel";
 
@@ -37,8 +44,14 @@ const previewScores: Places = {
 
 export function Onboarding() {
   const router = useRouter();
-  const { data: profile } = useStoreData((s) => s.getProfile());
-  const [step, setStep] = useState(0);
+  const params = useSearchParams();
+  const account = useAccount();
+  const signedIn = account.status === "signed-in";
+  const { data: profile } = useStoreData((s) => (backend.accounts && !signedIn ? Promise.resolve(null) : s.getProfile()));
+  const [step, setStep] = useState(params.get("step") ? TOTAL_STEPS - 1 : 0);
+  // Arrived signed out: once she signs in here, a returning member goes straight in.
+  const [cameSignedOut] = useState(account.status === "signed-out" || account.status === "loading");
+  const needsSignIn = backend.accounts && account.status === "signed-out";
   const [name, setName] = useState<string | null>(null);
   const [previewPlaces, setPreviewPlaces] = useState<Places>({});
   const [saveFailed, setSaveFailed] = useState(false);
@@ -52,6 +65,10 @@ export function Onboarding() {
       setPreviewPlaces({});
     };
   }, [step]);
+
+  useEffect(() => {
+    if (cameSignedOut && signedIn && profile?.onboardedAt) router.replace("/");
+  }, [cameSignedOut, signedIn, profile, router]);
 
   const nameValue = name ?? profile?.name ?? "";
 
@@ -110,8 +127,15 @@ export function Onboarding() {
             <p className="mt-8 font-serif text-2xl tracking-[0.32em] text-plum uppercase">{brand.appName}</p>
             <h1 className="mt-6 font-serif text-[2.75rem] text-plum">{brand.tagline}</h1>
             <p className="mx-auto mt-4 max-w-xs text-plum-soft">{brand.promise}</p>
+            {needsSignIn && (
+              <button type="button" onClick={() => setStep(TOTAL_STEPS - 1)} className="mt-6 py-2 text-sm text-plum-soft underline decoration-gold underline-offset-4">
+                I already have an account
+              </button>
+            )}
           </div>
         )}
+
+        {step === 3 && needsSignIn && <SignInForm />}
 
         {step === 1 && (
           <div>
@@ -146,7 +170,7 @@ export function Onboarding() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 3 && !needsSignIn && (
           <form
             id="name-form"
             onSubmit={(e) => {
@@ -156,7 +180,7 @@ export function Onboarding() {
           >
             <p className="label">Before we begin</p>
             <h1 className="mt-3 font-serif text-[2.6rem] text-plum">What should we call you?</h1>
-            <p className="mt-3 text-plum-soft">So we can greet you by name. It stays on this device.</p>
+            <p className="mt-3 text-plum-soft">So we can greet you by name. {backend.accounts ? "Only you can see it." : "It stays on this device."}</p>
             <label htmlFor="welcome-name" className="sr-only">
               Your first name
             </label>
@@ -173,7 +197,9 @@ export function Onboarding() {
               className="mt-6"
               message={
                 saveFailed
-                  ? "We couldn't save that on this device. Please check that your browser allows websites to save data (private browsing can block it), then try again."
+                  ? backend.accounts
+                    ? "We couldn't save that just now. Please check your connection, then try again."
+                    : "We couldn't save that on this device. Please check that your browser allows websites to save data (private browsing can block it), then try again."
                   : null
               }
             />
@@ -187,7 +213,7 @@ export function Onboarding() {
           <button key="continue" type="button" onClick={next} className="w-full rounded-full bg-plum px-6 py-4 text-sm font-medium tracking-[0.2em] text-ivory uppercase transition-transform active:scale-[0.98]">
             {step === 0 ? "Begin" : "Continue"}
           </button>
-        ) : (
+        ) : needsSignIn || account.status === "loading" ? null : (
           <>
             {/* A plain button (not "submit") so the tap that showed this step can't also press it */}
             <button key="come-in" type="button" onClick={() => finish()} className="w-full rounded-full bg-plum px-6 py-4 text-sm font-medium tracking-[0.2em] text-ivory uppercase transition-transform active:scale-[0.98]">

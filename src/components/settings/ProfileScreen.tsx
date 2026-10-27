@@ -2,17 +2,24 @@
 
 /**
  * PROFILE
- * Change the name the app greets you by, and replay the welcome.
+ * Change the name the app greets you by, see which account you're signed
+ * in to (and sign out), and replay the welcome.
  * Her history (assessments, Become choices, stories) joins this screen later.
  */
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { brand } from "@/config/app.config";
+import { supabase } from "@/lib/supabase/client";
+import { useAccount } from "../account/AccountGate";
 import { store, useStoreData } from "@/lib/data";
 import { SaveNotice } from "../SaveNotice";
 
 export function ProfileScreen() {
+  const router = useRouter();
+  const account = useAccount();
+  const [signingOut, setSigningOut] = useState(false);
   const { data: profile, ready } = useStoreData((s) => s.getProfile());
   // `draft` is what's typed; until they type, show the saved name.
   const [draft, setDraft] = useState<string | null>(null);
@@ -67,6 +74,25 @@ export function ProfileScreen() {
         <SaveNotice className="mt-4" message={saveFailed ? "Your name didn't save. Please try again in a moment." : null} />
       </form>
 
+      {account.status === "signed-in" && (
+        <section className="card mt-4 p-5">
+          <p className="label">Your account</p>
+          <p className="mt-2 font-serif text-xl break-all text-plum">{account.email}</p>
+          <button
+            type="button"
+            disabled={signingOut}
+            onClick={async () => {
+              setSigningOut(true);
+              await supabase().auth.signOut();
+              router.replace("/welcome");
+            }}
+            className="mt-4 rounded-full border border-line px-5 py-2 text-sm text-plum transition-colors hover:border-taupe"
+          >
+            Sign out
+          </button>
+        </section>
+      )}
+
       <Link href="/intentions" className="card mt-4 flex items-center justify-between p-5 text-plum">
         <span className="font-serif text-xl">Your 90-day intentions</span>
         <span className="label">View</span>
@@ -83,7 +109,7 @@ export function ProfileScreen() {
       </Link>
 
       <p className="mt-8 text-center text-xs leading-relaxed text-plum-soft/70">
-        Everything you write stays private on this device.
+        {account.status === "off" ? "Everything you write stays private on this device." : "Everything you write is private to your account."}
         <br />
         {brand.brandName} · {brand.company}
       </p>

@@ -45,6 +45,33 @@ begin
   select count(*) into n from public.goals;
   if n <> 1 then raise exception 'FAIL: a member cannot read her own goal'; end if;
 
+  -- Saving an assessment writes it and its scores together.
+  perform public.save_assessment('Noticed', '[{"dimension_id":"joy","score":7,"note":"dancing"},{"dimension_id":"spirit","score":5,"note":""}]'::jsonb);
+  select count(*) into n from public.assessment_scores s join public.assessments x on x.id = s.assessment_id and x.user_id = s.user_id where x.noticing = 'Noticed';
+  if n <> 2 then raise exception 'FAIL: save_assessment did not save every score'; end if;
+
+  -- Planting a goal writes it, its milestones (in order) and its first actions together.
+  perform public.plant_goal(
+    '{"title":"Planted","vision":"why","dimension_ids":["joy"],"starts_on":"2026-10-27","ends_on":"2027-01-25"}'::jsonb,
+    array['first', 'second', 'third'],
+    '[{"title":"act one","week_of":"2026-10-26"},{"title":"act two","week_of":"2026-10-26"}]'::jsonb
+  );
+  select count(*) into n from public.milestones m join public.goals g on g.id = m.goal_id and g.user_id = m.user_id where g.title = 'Planted';
+  if n <> 3 then raise exception 'FAIL: plant_goal did not save every milestone'; end if;
+  select count(*) into n from public.weekly_actions w join public.goals g on g.id = w.goal_id and g.user_id = w.user_id where g.title = 'Planted';
+  if n <> 2 then raise exception 'FAIL: plant_goal did not save every first action'; end if;
+  if (select string_agg(m.title, ',' order by m.created_at) from public.milestones m join public.goals g on g.id = m.goal_id and g.user_id = m.user_id where g.title = 'Planted') <> 'first,second,third' then
+    raise exception 'FAIL: milestones lost the order she wrote them in';
+  end if;
+
+  -- A goal that fails halfway leaves nothing behind (a bad dimension stops it).
+  blocked := false;
+  begin
+    perform public.plant_goal('{"title":"Broken","dimension_ids":["not-a-dimension"],"starts_on":"2026-10-27","ends_on":"2027-01-25"}'::jsonb, array['m'], '[]'::jsonb);
+  exception when check_violation then blocked := true;
+  end;
+  if not blocked or exists (select 1 from public.goals where title = 'Broken') then raise exception 'FAIL: a failed plant_goal left something behind'; end if;
+
   -- A cannot change what she agreed to.
   blocked := false;
   begin
@@ -118,6 +145,12 @@ begin
     end;
     if not blocked then raise exception 'FAIL: signed-out visitors can read %', t; end if;
   end loop;
+  blocked := false;
+  begin
+    perform public.save_assessment('anon', '[]'::jsonb);
+  exception when insufficient_privilege then blocked := true;
+  end;
+  if not blocked then raise exception 'FAIL: signed-out visitors can save an assessment'; end if;
   reset role;
 
   -- ---- Deleting a member removes everything she owns ----

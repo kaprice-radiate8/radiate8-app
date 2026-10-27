@@ -21,7 +21,7 @@ const tabs = [
 export function BottomNav() {
   const pathname = usePathname();
   // Hide the tab bar during onboarding.
-  if (pathname.startsWith("/welcome")) return null;
+  if (pathname.startsWith("/welcome") || pathname.startsWith("/auth")) return null;
 
   return (
     <nav

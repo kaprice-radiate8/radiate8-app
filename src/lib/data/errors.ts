@@ -13,3 +13,15 @@ export class SaveError extends Error {
     this.cause = cause;
   }
 }
+
+/**
+ * Thrown when saved data couldn't be loaded (for example, no connection to
+ * her account). Screens keep showing what they had, and a gentle notice says why.
+ */
+export class LoadError extends Error {
+  constructor(cause?: unknown) {
+    super("Could not reach your account.");
+    this.name = "LoadError";
+    this.cause = cause;
+  }
+}

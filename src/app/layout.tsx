@@ -7,7 +7,9 @@ import type { Metadata, Viewport } from "next";
 import { brand, colors } from "@/config/app.config";
 import { fontVariables } from "@/config/fonts";
 import { themeCss } from "@/config/theme-css";
+import { AccountGate } from "@/components/account/AccountGate";
 import { BottomNav } from "@/components/BottomNav";
+import { ConnectionNotice } from "@/components/ConnectionNotice";
 import { GoldenBackground } from "@/components/GoldenBackground";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
@@ -38,9 +40,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <GoldenBackground />
         <main className="mx-auto min-h-dvh w-full max-w-md px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-32">
           <SiteHeader />
-          {children}
+          <AccountGate>{children}</AccountGate>
         </main>
         <BottomNav />
+        <ConnectionNotice />
         <ServiceWorkerRegister />
       </body>
     </html>

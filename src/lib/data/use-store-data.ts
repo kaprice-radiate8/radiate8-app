@@ -26,12 +26,17 @@ export function useStoreData<T>(load: (s: DataStore) => Promise<T>) {
 
   const refresh = useCallback(() => {
     let cancelled = false;
-    loadRef.current(store).then((value) => {
-      if (!cancelled) {
-        setData(value);
-        setReady(true);
-      }
-    });
+    loadRef.current(store).then(
+      (value) => {
+        if (!cancelled) {
+          setData(value);
+          setReady(true);
+        }
+      },
+      // Couldn't load (no connection to her account): keep what's showing.
+      // ConnectionNotice tells her why; the next change or visit tries again.
+      () => {},
+    );
     return () => {
       cancelled = true;
     };
