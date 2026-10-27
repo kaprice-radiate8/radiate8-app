@@ -9,7 +9,7 @@
  *
  * After changing which screens exist, bump VERSION so phones refresh their copy.
  */
-const VERSION = "radiate-v8";
+const VERSION = "radiate-v9";
 
 const CORE = [
   "/",

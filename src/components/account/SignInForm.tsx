@@ -91,10 +91,10 @@ export function SignInForm() {
       <p className="label">Check your email</p>
       <h1 className="mt-3 font-serif text-[2.6rem] text-plum">It&rsquo;s on its way</h1>
       <p className="mt-3 text-plum-soft">
-        We sent an email to <span className="text-plum">{sentTo}</span>. Tap the link in it on this phone, or type its 6-digit code here.
+        We sent an email to <span className="text-plum">{sentTo}</span>. Tap the link in it on this phone, in this same browser.
       </p>
       <label htmlFor="sign-in-code" className="label mt-8 block">
-        The code from the email
+        Or, if your email has a 6-digit code, type it here
       </label>
       <input
         id="sign-in-code"

@@ -5,7 +5,7 @@ import type { NextConfig } from "next";
  * redirect links and email templates; see docs/accounts-setup.md).
  * Until then the deployed app keeps saving on each phone, as before.
  */
-const ACCOUNTS_LIVE_ON_VERCEL = false;
+const ACCOUNTS_LIVE_ON_VERCEL = true;
 
 const nextConfig: NextConfig = {
   env: {
