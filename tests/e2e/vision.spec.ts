@@ -1,6 +1,7 @@
 /**
- * The vision board: photos and words, each perhaps tagged with a dimension,
- * and any image can become (or link to) a 90-day intention.
+ * The vision board: photos, words and stickers in a collage that arranges
+ * itself until she arranges it; any photo or words can become (or link to)
+ * a 90-day intention.
  */
 import { expect, test } from "@playwright/test";
 import { breakStorage, fixStorage, returningVisitor } from "./helpers";
@@ -45,7 +46,7 @@ test("a photo grows into a 90-day intention, and the intention shows it", async 
 
   // ...and the board shows the image is linked
   await page.goto("/vision");
-  await expect(page.getByRole("list", { name: "Your vision board" }).getByText("90-day intention")).toBeVisible();
+  await expect(page.getByRole("list", { name: "Your vision board" }).getByText("90 days")).toBeVisible();
   await page.getByRole("link", { name: "Mornings by the sea" }).click();
   await expect(page.getByRole("link", { name: /Walk by the water/ })).toBeVisible();
 });
@@ -121,4 +122,71 @@ test("a photo that doesn't save says so and stays on screen", async ({ page }) =
   await fixStorage(page);
   await page.getByRole("button", { name: "Add to my board" }).click();
   await expect(page.getByRole("link", { name: "Kept safe" })).toBeVisible();
+});
+
+test("in Arrange mode she can add stickers, tilt and move pieces, rename the board, and let it arrange itself again", async ({ page }) => {
+  await returningVisitor(page);
+  await page.goto("/vision");
+  for (const words of ["First light", "Second wind"]) {
+    await page.getByRole("button", { name: "Add words" }).click();
+    await page.getByLabel("Your words").fill(words);
+    await page.getByRole("button", { name: "Add to my board" }).click();
+    await expect(page.getByRole("link", { name: words })).toBeVisible();
+  }
+  const board = page.getByRole("list", { name: "Your vision board" });
+  await expect(board.getByText(`${new Date().getFullYear()} Vision Board`)).toBeVisible();
+
+  await page.getByRole("button", { name: "Arrange" }).click();
+  await expect(page.getByText("Tap anything on your board to move, tilt or resize it.")).toBeVisible();
+
+  // A sticker
+  await page.getByRole("button", { name: "Add a sticker" }).click();
+  await page.getByRole("button", { name: "Gold star", exact: true }).click();
+  await expect(board.getByRole("button", { name: "Select Gold star sticker" })).toBeVisible();
+
+  // Tilt one piece, then drag it
+  const piece = board.getByRole("button", { name: "Select First light" });
+  await piece.click();
+  await page.getByRole("button", { name: "Tilt right" }).click();
+  const box = (await piece.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 40, box.y + box.height / 2 + 30, { steps: 5 });
+  await page.mouse.up();
+
+  // Rename the board
+  await page.getByRole("button", { name: "Rename board" }).click();
+  await page.getByLabel("Name your board").fill("My Becoming");
+  await page.getByRole("button", { name: "Save title" }).click();
+  await page.getByRole("button", { name: "Done" }).click();
+
+  // It all stays put after leaving and coming back
+  const saved = async () =>
+    page.evaluate(() => JSON.parse(localStorage.getItem("radiate:v2:vision-items") ?? "[]") as { kind: string; words: string; layout: { r: number } | null }[]);
+  await page.reload();
+  await expect(board.getByText("My Becoming")).toBeVisible();
+  await expect(board.getByRole("img", { name: "Gold star sticker" })).toBeVisible();
+  const items = await saved();
+  expect(items.every((i) => i.layout)).toBe(true);
+  expect(items.find((i) => i.words === "First light")!.layout!.r).toBeGreaterThan(-10);
+
+  // ...until she asks the board to arrange itself again
+  await page.getByRole("button", { name: "Arrange" }).click();
+  await page.getByRole("button", { name: "Arrange it for me" }).click();
+  await page.getByRole("button", { name: "Arrange it for me" }).last().click();
+  await expect.poll(async () => (await saved()).every((i) => i.layout === null)).toBe(true);
+});
+
+test("a photo or words can wear a different look", async ({ page }) => {
+  await returningVisitor(page);
+  await page.goto("/vision");
+  await page.getByRole("button", { name: "Add words" }).click();
+  await page.getByLabel("Your words").fill("Brave");
+  await page.getByRole("button", { name: "Add to my board" }).click();
+  await page.getByRole("link", { name: "Brave" }).click();
+  await page.getByRole("button", { name: "Cut-out letters" }).click();
+  await expect(page.getByRole("button", { name: "Cut-out letters" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Typewriter" }).click();
+  await expect(page.getByRole("button", { name: "Typewriter" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Cut-out letters" })).toHaveAttribute("aria-pressed", "false");
 });

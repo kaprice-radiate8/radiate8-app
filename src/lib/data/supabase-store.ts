@@ -149,12 +149,17 @@ const PHOTOS = "member-media";
 const PHOTO_LINK_SECONDS = 60 * 60;
 
 const toVision = (r: Row, links: Map<string, string>): VisionItem => {
-  const path = (r.media as Row | null)?.storage_path as string | undefined;
+  const media = r.media as Row | null;
+  const path = media?.storage_path as string | undefined;
   return {
     id: r.id as string,
     kind: r.kind as VisionItem["kind"],
     imageUrl: path ? (links.get(path) ?? null) : null,
+    aspect: media?.width && media?.height ? (media.height as number) / (media.width as number) : null,
     words: r.words as string,
+    sticker: (r.sticker as string | null) ?? null,
+    style: (r.style as string | null) ?? null,
+    layout: (r.layout as VisionItem["layout"]) ?? null,
     dimensionId: (r.dimension_id as DimensionId | null) ?? null,
     intentionId: (r.goal_id as string | null) ?? null,
     position: r.position as number,
@@ -394,7 +399,7 @@ export const supabaseStore: DataStore = {
 
   async listVisionItems() {
     const rows = await load(
-      db().from("vision_items").select("*, media(storage_path)").eq("board", "main").order("position").order("created_at"),
+      db().from("vision_items").select("*, media(storage_path, width, height)").eq("board", "main").order("position").order("created_at"),
     );
     const paths = rows.map((r) => (r.media as Row | null)?.storage_path as string | undefined).filter((p): p is string => Boolean(p));
     const links = new Map<string, string>();
@@ -417,7 +422,7 @@ export const supabaseStore: DataStore = {
         db()
           .from("vision_items")
           .insert({ kind: "image", media_id: mediaId, words: details.words, dimension_id: details.dimensionId, position: endOfBoard() })
-          .select("*, media(storage_path)")
+          .select("*, media(storage_path, width, height)")
           .single(),
       );
       const { data: link } = await photos.createSignedUrl(path, PHOTO_LINK_SECONDS);
@@ -435,8 +440,34 @@ export const supabaseStore: DataStore = {
     );
     return toVision(row, new Map());
   },
+  async addVisionSticker(sticker, layout) {
+    await memberId();
+    const row = await save(db().from("vision_items").insert({ kind: "sticker", sticker, layout, position: endOfBoard() }).select().single());
+    return toVision(row, new Map());
+  },
+  async setVisionTitle(words, layout) {
+    await memberId();
+    const existing = await load<Row | null>(db().from("vision_items").select("id, layout").eq("board", "main").eq("kind", "title").maybeSingle());
+    const row = existing
+      ? await save(
+          db()
+            .from("vision_items")
+            .update({ words, layout: layout ?? existing.layout, updated_at: now() })
+            .eq("id", existing.id as string)
+            .select()
+            .single(),
+        )
+      : await save(db().from("vision_items").insert({ kind: "title", words, layout, position: 0 }).select().single());
+    return toVision(row, new Map());
+  },
+  async saveVisionLayouts(changes) {
+    if (!changes.length) return;
+    await save(db().rpc("set_vision_layouts", { changes: changes.map((c) => ({ id: c.id, layout: c.layout, style: c.style ?? null })) }));
+  },
   async updateVisionItem(id, changes) {
     const patch: Row = { updated_at: now() };
+    if (changes.style !== undefined) patch.style = changes.style;
+    if (changes.layout !== undefined) patch.layout = changes.layout;
     if (changes.words !== undefined) patch.words = changes.words;
     if (changes.dimensionId !== undefined) patch.dimension_id = changes.dimensionId;
     if (changes.intentionId !== undefined) patch.goal_id = changes.intentionId;

@@ -111,10 +111,16 @@ const newestFirst = <T extends { createdAt: string }>(items: T[]) =>
   [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
 /** Save a new vision item at the end of her board. */
-function addVisionItem(item: Pick<VisionItem, "kind" | "imageUrl" | "words" | "dimensionId">): VisionItem {
+function addVisionItem(item: Pick<VisionItem, "kind" | "words"> & Partial<VisionItem>): VisionItem {
   const all = read<VisionItem[]>(KEYS.vision, []);
   const now = new Date().toISOString();
   const saved: VisionItem = {
+    imageUrl: null,
+    aspect: null,
+    sticker: null,
+    style: null,
+    layout: null,
+    dimensionId: null,
     ...item,
     id: newId(),
     intentionId: null,
@@ -386,13 +392,34 @@ export const localStore: DataStore = {
     } catch (cause) {
       throw new SaveError(cause);
     }
-    return addVisionItem({ kind: "image", imageUrl, ...details });
+    return addVisionItem({ kind: "image", imageUrl, aspect: image.height / image.width, ...details });
   },
   async addVisionWords(details) {
-    return addVisionItem({ kind: "words", imageUrl: null, ...details });
+    return addVisionItem({ kind: "words", ...details });
+  },
+  async addVisionSticker(sticker, layout) {
+    return addVisionItem({ kind: "sticker", words: "", sticker, layout });
+  },
+  async setVisionTitle(words, layout) {
+    const title = read<VisionItem[]>(KEYS.vision, []).find((v) => v.kind === "title");
+    if (!title) return addVisionItem({ kind: "title", words, layout });
+    const updated = { ...title, words, layout: layout ?? title.layout, updatedAt: new Date().toISOString() };
+    patch<VisionItem>(KEYS.vision, title.id, () => updated);
+    return updated;
   },
   async updateVisionItem(id, changes) {
     patch<VisionItem>(KEYS.vision, id, (v) => ({ ...v, ...changes, updatedAt: new Date().toISOString() }));
+  },
+  async saveVisionLayouts(changes) {
+    const byId = new Map(changes.map((c) => [c.id, c]));
+    const now = new Date().toISOString();
+    write(
+      KEYS.vision,
+      read<VisionItem[]>(KEYS.vision, []).map((v) => {
+        const c = byId.get(v.id);
+        return c ? { ...v, layout: c.layout, style: c.style ?? v.style, updatedAt: now } : v;
+      }),
+    );
   },
   async reorderVisionItems(ids) {
     const order = new Map(ids.map((id, i) => [id, i + 1]));

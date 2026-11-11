@@ -13,9 +13,21 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getDimension } from "@/config/app.config";
 import { store, useStoreData, type VisionItem } from "@/lib/data";
+import { IMAGE_STYLES, WORD_STYLES, styleOf } from "@/lib/collage";
 import { IntentionCard } from "../intentions/IntentionList";
 import { SaveNotice } from "../SaveNotice";
 import { DimensionChoice } from "./DimensionChoice";
+
+const LOOK_NAMES: Record<string, string> = {
+  polaroid: "Polaroid",
+  tape: "Taped",
+  torn: "Torn paper",
+  clean: "Clean border",
+  script: "Handwritten",
+  label: "Paper label",
+  cutout: "Cut-out letters",
+  typed: "Typewriter",
+};
 
 const TRY_AGAIN = "That didn't save. Please check your connection and try again.";
 
@@ -66,6 +78,26 @@ export function VisionItemScreen() {
       </div>
 
       <SaveNotice message={problem} />
+
+      <section>
+        <p className="label">Its look on your board</p>
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Its look on your board">
+          {(item.kind === "image" ? IMAGE_STYLES : WORD_STYLES).map((style) => {
+            const on = styleOf(item) === style;
+            return (
+              <button
+                key={style}
+                type="button"
+                aria-pressed={on}
+                onClick={() => attempt(() => store.updateVisionItem(item.id, { style }))}
+                className={`rounded-full border px-3 py-1.5 text-xs transition-all duration-300 ${on ? "border-plum bg-plum text-ivory" : "border-line/80 bg-linen/70 text-plum"}`}
+              >
+                {LOOK_NAMES[style]}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <section>
         <p className="label">Where in your life it lives</p>

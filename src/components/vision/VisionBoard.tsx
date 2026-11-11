@@ -3,18 +3,19 @@
 /**
  * HER VISION BOARD (web address: /vision)
  *
- * A soft collage of what she's growing toward: photos and a few words,
- * each perhaps tagged with a dimension. Any image can become a 90-day
- * intention (on its own page). Photos are prepared on her phone first
- * (resized, location data removed) and kept private to her.
+ * A collage of what she's growing toward: photos, words and stickers that
+ * arrange themselves (tilted, overlapping, taped) until she arranges them
+ * herself. Any photo or words can become a 90-day intention (on its own
+ * page). Photos are prepared on her phone first (resized, location data
+ * removed) and kept private to her.
  */
 import { useRef, useState } from "react";
-import Link from "next/link";
-import { ImagePlus, Type } from "lucide-react";
-import { getDimension, type DimensionId } from "@/config/app.config";
-import { store, useStoreData, type PreparedImage, type VisionItem } from "@/lib/data";
+import { ImagePlus, Move, Type } from "lucide-react";
+import type { DimensionId } from "@/config/app.config";
+import { store, useStoreData, type PreparedImage } from "@/lib/data";
 import { prepareImage } from "@/lib/images";
 import { SaveNotice } from "../SaveNotice";
+import { Collage } from "./Collage";
 import { DimensionChoice } from "./DimensionChoice";
 
 const primaryButton =
@@ -25,6 +26,7 @@ type Draft = { kind: "image"; image: PreparedImage; preview: string } | { kind: 
 export function VisionBoard() {
   const { data: items, ready } = useStoreData((s) => s.listVisionItems());
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [arranging, setArranging] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -46,9 +48,10 @@ export function VisionBoard() {
 
   if (!ready) return null;
   const board = items ?? [];
+  const hasPieces = board.some((i) => i.kind !== "title");
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-5 ${arranging ? "pb-24" : ""}`}>
       <header className="text-center">
         <p className="label">Vision</p>
         <h1 className="mt-2 font-serif text-4xl text-plum">Your vision board</h1>
@@ -71,80 +74,47 @@ export function VisionBoard() {
 
       {draft ? (
         <Composer draft={draft} onDone={close} />
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          <button type="button" onClick={() => fileInput.current?.click()} className="card flex flex-col items-center gap-2 px-4 py-5 text-plum transition-transform active:scale-[0.98]">
-            <ImagePlus size={22} strokeWidth={1.4} />
-            <span className="text-sm">Add a photo</span>
+      ) : arranging ? (
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-blush/50 px-4 py-3">
+          <p className="text-sm text-plum">Drag, tilt and resize anything. It saves as you go.</p>
+          <button type="button" onClick={() => setArranging(false)} className="shrink-0 rounded-full bg-plum px-5 py-2 text-sm font-medium text-ivory">
+            Done
           </button>
-          <button type="button" onClick={() => setDraft({ kind: "words" })} className="card flex flex-col items-center gap-2 px-4 py-5 text-plum transition-transform active:scale-[0.98]">
-            <Type size={22} strokeWidth={1.4} />
-            <span className="text-sm">Add words</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          <button type="button" onClick={() => fileInput.current?.click()} className="card flex flex-col items-center gap-1.5 px-2 py-4 text-plum transition-transform active:scale-[0.98]">
+            <ImagePlus size={21} strokeWidth={1.4} />
+            <span className="text-xs">Add a photo</span>
+          </button>
+          <button type="button" onClick={() => setDraft({ kind: "words" })} className="card flex flex-col items-center gap-1.5 px-2 py-4 text-plum transition-transform active:scale-[0.98]">
+            <Type size={21} strokeWidth={1.4} />
+            <span className="text-xs">Add words</span>
+          </button>
+          <button
+            type="button"
+            disabled={!hasPieces}
+            onClick={() => setArranging(true)}
+            className="card flex flex-col items-center gap-1.5 px-2 py-4 text-plum transition-transform active:scale-[0.98] disabled:opacity-40"
+          >
+            <Move size={21} strokeWidth={1.4} />
+            <span className="text-xs">Arrange</span>
           </button>
         </div>
       )}
       <SaveNotice message={problem} />
 
-      {board.length === 0 && !draft ? (
+      {!hasPieces && !draft ? (
         <section className="rounded-[1.75rem] border border-dashed border-taupe/60 p-8 text-center">
           <h2 className="font-serif text-2xl text-plum">Your board is waiting</h2>
           <p className="mx-auto mt-2 max-w-xs text-sm text-plum-soft">
-            What would you love your life to look and feel like? Begin with one image, or a few words.
+            What would you love your life to look and feel like? Begin with one image, or a few words. Your board arranges itself into a collage, and you can make it your own.
           </p>
         </section>
       ) : (
-        <ul className="columns-2 gap-3" aria-label="Your vision board">
-          {board.map((item) => (
-            <li key={item.id} className="mb-3 break-inside-avoid">
-              <Tile item={item} />
-            </li>
-          ))}
-        </ul>
+        <Collage items={board} arranging={arranging && !draft} />
       )}
     </div>
-  );
-}
-
-/** One item on the board. Tap to open it. */
-function Tile({ item }: { item: VisionItem }) {
-  const d = item.dimensionId ? getDimension(item.dimensionId) : undefined;
-  const label = item.words || (d ? `A photo for ${d.name}` : "A photo on your board");
-  return (
-    <Link href={`/vision/item?id=${item.id}`} aria-label={label} className="rise block">
-      {item.kind === "image" ? (
-        <figure className="overflow-hidden rounded-[1.25rem] bg-linen shadow-[0_14px_30px_-20px_rgb(75_48_74/0.45)]">
-          {item.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- private, short-lived links; not suited to the image optimizer
-            <img src={item.imageUrl} alt={item.words || ""} className="block h-auto w-full" loading="lazy" />
-          ) : (
-            <div className="aspect-[4/5] w-full bg-blush/40" />
-          )}
-          {(item.words || item.intentionId) && (
-            <figcaption className="space-y-1 px-3 py-2.5">
-              {item.words && <span className="block font-serif text-base leading-snug text-plum">{item.words}</span>}
-              {item.intentionId && <GoalMark />}
-            </figcaption>
-          )}
-        </figure>
-      ) : (
-        <div className="rounded-[1.25rem] px-4 py-6 text-center shadow-[0_14px_30px_-20px_rgb(75_48_74/0.35)]" style={{ backgroundColor: d ? `${d.accent}2e` : "var(--r8-blush)" }}>
-          <p className="font-serif text-xl leading-snug text-plum italic">{item.words}</p>
-          {item.intentionId && (
-            <div className="mt-3 flex justify-center">
-              <GoalMark />
-            </div>
-          )}
-        </div>
-      )}
-    </Link>
-  );
-}
-
-function GoalMark() {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-[0.65rem] tracking-[0.14em] text-plum uppercase">
-      <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" /> 90-day intention
-    </span>
   );
 }
 

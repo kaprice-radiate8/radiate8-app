@@ -180,16 +180,32 @@ export type NewDailyAction = Pick<DailyAction, "text" | "weeklyActionId" | "inte
 // ---- Vision board ----
 
 /**
- * One item on her vision board: an image or a few words, perhaps tagged with
- * a dimension, perhaps linked to one of her 90-day intentions.
+ * Where an item sits on her collage, in board-width units (the board is 100
+ * wide; it grows as tall as it needs). x, y is the item's centre, w its width,
+ * r its tilt in degrees, z its stacking order (higher is in front).
+ */
+export type VisionLayout = { x: number; y: number; w: number; r: number; z: number };
+
+/**
+ * One item on her vision board: a photo, a few words, a sticker, or the
+ * board's title. Photos and words may be tagged with a dimension and linked
+ * to one of her 90-day intentions.
  */
 export type VisionItem = {
   id: string;
-  kind: "image" | "words";
-  /** Where to show the image from (a private, short-lived link). Null for words. */
+  kind: "image" | "words" | "sticker" | "title";
+  /** Where to show the image from (a private, short-lived link). Null for everything but photos. */
   imageUrl: string | null;
-  /** The words: the whole item for a words item, a caption for an image. */
+  /** A photo's height divided by its width, when known. */
+  aspect: number | null;
+  /** The words: the whole item for words and the title, a caption for a photo. */
   words: string;
+  /** Which sticker (see components/vision/stickers.tsx). Only for stickers. */
+  sticker: string | null;
+  /** Her chosen look (a photo's frame, the lettering of words). Null: chosen for her. */
+  style: string | null;
+  /** Her chosen place on the board. Null: arranged for her. */
+  layout: VisionLayout | null;
   dimensionId: DimensionId | null;
   intentionId: string | null;
   position: number;
@@ -198,7 +214,8 @@ export type VisionItem = {
 };
 
 export type NewVisionItem = Pick<VisionItem, "words" | "dimensionId">;
-export type VisionItemChanges = Partial<Pick<VisionItem, "words" | "dimensionId" | "intentionId">>;
+export type VisionItemChanges = Partial<Pick<VisionItem, "words" | "dimensionId" | "intentionId" | "style" | "layout">>;
+export type VisionLayoutChange = { id: string; layout: VisionLayout | null; style?: string | null };
 
 /** A photo ready to save: already resized, with location data removed (see lib/images.ts). */
 export type PreparedImage = { blob: Blob; width: number; height: number };
@@ -275,7 +292,13 @@ export interface DataStore {
   addVisionImage(image: PreparedImage, details: NewVisionItem): Promise<VisionItem>;
   /** Add a few words to the end of her board. */
   addVisionWords(details: NewVisionItem): Promise<VisionItem>;
+  /** Add a sticker, where she put it (or null to have it placed for her). */
+  addVisionSticker(sticker: string, layout: VisionLayout | null): Promise<VisionItem>;
+  /** Name her board (there is one title per board; this adds or renames it). */
+  setVisionTitle(words: string, layout: VisionLayout | null): Promise<VisionItem>;
   updateVisionItem(id: string, changes: VisionItemChanges): Promise<void>;
+  /** Save where several items sit (and their styles), all at once. A null layout returns it to automatic. */
+  saveVisionLayouts(changes: VisionLayoutChange[]): Promise<void>;
   /** Put her items in this order (every id, first to last). */
   reorderVisionItems(ids: string[]): Promise<void>;
   /** Remove an item (and its photo). */
